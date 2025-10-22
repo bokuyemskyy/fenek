@@ -19,10 +19,15 @@ repositories {
 }
 
 dependencies {
+	developmentOnly("org.springframework.boot:spring-boot-devtools")
+
 	implementation("org.springframework.boot:spring-boot-starter-web")
-	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-security")
-    runtimeOnly("org.postgresql:postgresql")
+
+	implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
+	implementation("org.keycloak:keycloak-admin-client:26.0.2")
+    implementation("org.postgresql:postgresql")
     
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")

@@ -1,15 +1,4 @@
 services:
-  postgres:
-    image: postgres:16
-    environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-    volumes:
-      - postgres_data:/var/lib/postgres
-      - ./backend/database:/docker-entrypoint-initdb.d
-    networks:
-      - internal
-
   keycloak:
     image: quay.io/keycloak/keycloak:26.4.0
     environment:
@@ -17,6 +6,8 @@ services:
       KC_DB_URL: jdbc:postgresql://postgres/keycloak
       KC_DB_USERNAME: ${POSTGRES_USER}
       KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
+      KEYCLOAK_ADMIN: amon
+      KEYCLOAK_ADMIN_PASSWORD: 123123
     volumes:
       - ./backend/keycloak/theme/test:/opt/keycloak/themes/test
     ports:
@@ -24,8 +15,10 @@ services:
     networks:
       - internal
       - public
-    command:
-      - start-dev
+    command: >
+      start-dev  --http-enabled=true  --hostname-strict=false
+    depends_on:
+      - postgres
 
   frontend:
     build:
@@ -37,6 +30,7 @@ services:
       - public
     depends_on:
       - gateway
+      - keycloak
 
   gateway:
     build: ./backend/gateway
@@ -49,28 +43,44 @@ services:
       - internal
       - public
     depends_on:
-      #      - users
       - chats
+      #      - users
 
   chats:
     build: ./backend/chats
     environment:
-      - POSTGRES_URL=jdbc:postgresql://postgres/chats
+      - POSTGRES_URL=jdbc:postgresql://postgres:5432/chats
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - KEYCLOAK_REALM=${KEYCLOAK_REALM}
+
       - KEYCLOAK_URL=http://keycloak:8080
+      - KEYCLOAK_REALM=${KEYCLOAK_REALM}
       - KEYCLOAK_RESOURCE=${KEYCLOAK_RESOURCE}
-      - SPRING_PROFILES_ACTIVE=prod
+
+      - KEYCLOAK_ADMIN_REALM=${KEYCLOAK_ADMIN_REALM}
+      - KEYCLOAK_ADMIN_CLIENT_ID=${KEYCLOAK_ADMIN_CLIENT_ID}
+      - KEYCLOAK_ADMIN_CLIENT_SECRET=${KEYCLOAK_ADMIN_CLIENT_SECRET}
     networks:
       - internal
+    ports:
+      - 3001:8080
+    volumes:
+      - ./backend/chats:/app
+    depends_on:
+      - postgres
 
-#  users:
-#    build: ./backend/users
-#    environment:
-#      - SPRING_PROFILES_ACTIVE=prod
-#    networks:
-#      - internal
+  postgres:
+    image: postgres:16
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgres
+      - ./backend/database:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    networks:
+      - internal
 
 volumes:
   postgres_data:
@@ -78,7 +88,4 @@ volumes:
 
 networks:
   internal:
-    driver: bridge
-    internal: true
   public:
-    driver: bridge
