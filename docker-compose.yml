@@ -31,6 +31,8 @@ services:
     depends_on:
       - gateway
       - keycloak
+    volumes:
+      - ./frontend:/app
 
   gateway:
     build: ./backend/gateway
@@ -77,8 +79,6 @@ services:
     volumes:
       - postgres_data:/var/lib/postgres
       - ./backend/database:/docker-entrypoint-initdb.d
-    ports:
-      - "5432:5432"
     networks:
       - internal
 
