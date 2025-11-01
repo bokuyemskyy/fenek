@@ -2,21 +2,24 @@ package dev.fenek.chats.model;
 
 import java.time.Instant;
 import java.util.UUID;
-
+import lombok.Getter;
+import lombok.Setter;
 import jakarta.persistence.*;
 
 @Entity
 @Table(name = "chat_members")
 @IdClass(ChatMemberId.class)
+@Getter
+@Setter
 public class ChatMember {
 
     @Id
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "chat_id", nullable = false)
+    @JoinColumn(name = "chat_id", nullable = false, updatable = false)
     private Chat chat;
 
     @Id
-    @Column(name = "user_id")
+    @Column(name = "user_id", nullable = false, updatable = false)
     private UUID userId;
 
     @Enumerated(EnumType.STRING)
@@ -24,6 +27,7 @@ public class ChatMember {
     private Role role;
 
     @Column(name = "joined_at", nullable = false, updatable = false)
+    @Setter(lombok.AccessLevel.NONE)
     private Instant joinedAt;
 
     @PrePersist
@@ -34,33 +38,5 @@ public class ChatMember {
     public enum Role {
         MEMBER,
         ADMIN
-    }
-
-    public Chat getChat() {
-        return chat;
-    }
-
-    public void setChat(Chat chat) {
-        this.chat = chat;
-    }
-
-    public UUID getUserId() {
-        return userId;
-    }
-
-    public void setUserId(UUID userId) {
-        this.userId = userId;
-    }
-
-    public Role getRole() {
-        return role;
-    }
-
-    public void setRole(Role role) {
-        this.role = role;
-    }
-
-    public Instant getJoinedAt() {
-        return joinedAt;
     }
 }

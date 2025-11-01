@@ -2,6 +2,7 @@ plugins {
 	java
 	id("org.springframework.boot") version "3.5.6"
 	id("io.spring.dependency-management") version "1.1.7"
+	id("io.freefair.lombok") version "9.0.0"
 }
 
 group = "dev.fenek"
@@ -28,7 +29,10 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
 	implementation("org.keycloak:keycloak-admin-client:26.0.2")
     implementation("org.postgresql:postgresql")
-    
+
+	implementation("org.hibernate.validator:hibernate-validator")
+
+
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }

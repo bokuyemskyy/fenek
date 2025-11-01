@@ -3,20 +3,25 @@ package dev.fenek.chats.model;
 import java.time.Instant;
 import java.util.UUID;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import jakarta.persistence.*;
 
 @Entity
 @Table(name = "message_status")
 @IdClass(MessageStatusId.class)
+@Getter
+@Setter
 public class MessageStatus {
 
     @Id
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "message_id", nullable = false)
+    @JoinColumn(name = "message_id", nullable = false, updatable = false)
     private Message message;
 
     @Id
-    @Column(name = "user_id")
+    @Column(name = "user_id", updatable = false)
     private UUID userId;
 
     @Column(nullable = false)
@@ -24,6 +29,7 @@ public class MessageStatus {
     private Status status;
 
     @Column(nullable = false)
+    @Setter(lombok.AccessLevel.NONE)
     private Instant updatedAt;
 
     public enum Status {
@@ -34,37 +40,5 @@ public class MessageStatus {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = Instant.now();
-    }
-
-    public Message getMessage() {
-        return message;
-    }
-
-    public void setMessage(Message message) {
-        this.message = message;
-    }
-
-    public UUID getUserId() {
-        return userId;
-    }
-
-    public void setUserId(UUID userId) {
-        this.userId = userId;
-    }
-
-    public Status getStatus() {
-        return status;
-    }
-
-    public void setStatus(Status status) {
-        this.status = status;
-    }
-
-    public Instant getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(Instant updatedAt) {
-        this.updatedAt = updatedAt;
     }
 }

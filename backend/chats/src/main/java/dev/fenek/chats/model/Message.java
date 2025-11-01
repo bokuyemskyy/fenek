@@ -3,27 +3,35 @@ package dev.fenek.chats.model;
 import java.time.Instant;
 import java.util.UUID;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import jakarta.persistence.*;
 
 @Entity
 @Table(name = "messages")
+@Getter
+@Setter
 public class Message {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Setter(lombok.AccessLevel.NONE)
+    @Column(nullable = false, updatable = false)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "chat_id", nullable = false)
+    @JoinColumn(name = "chat_id", nullable = false, updatable = false)
     private Chat chat;
 
-    @Column(name = "sender_id", nullable = false)
+    @Column(name = "sender_id", nullable = false, updatable = false)
     private UUID senderId;
 
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
     @Column(name = "created_at", nullable = false, updatable = false)
+    @Setter(lombok.AccessLevel.NONE)
     private Instant createdAt;
 
     @Column(name = "edited_at")
@@ -33,75 +41,15 @@ public class Message {
     private Instant deletedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "reply_to")
+    @JoinColumn(name = "reply_to", updatable = false)
     private Message replyTo;
 
     @PrePersist
     protected void onCreate() {
         createdAt = Instant.now();
-    }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Chat getChat() {
-        return chat;
-    }
-
-    public void setChat(Chat chat) {
-        this.chat = chat;
-    }
-
-    public UUID getSenderId() {
-        return senderId;
-    }
-
-    public void setSenderId(UUID senderId) {
-        this.senderId = senderId;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Instant createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public Instant getEditedAt() {
-        return editedAt;
-    }
-
-    public void setEditedAt(Instant editedAt) {
-        this.editedAt = editedAt;
-    }
-
-    public Instant getDeletedAt() {
-        return deletedAt;
-    }
-
-    public void setDeletedAt(Instant deletedAt) {
-        this.deletedAt = deletedAt;
-    }
-
-    public Message getReplyTo() {
-        return replyTo;
-    }
-
-    public void setReplyTo(Message replyTo) {
-        this.replyTo = replyTo;
+        if (replyTo != null && replyTo.equals(this)) {
+            throw new IllegalStateException("Message cannot reply to itself");
+        }
     }
 }
