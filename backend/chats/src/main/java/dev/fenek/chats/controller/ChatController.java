@@ -1,64 +1,60 @@
 package dev.fenek.chats.controller;
 
-import java.util.Arrays;
-import java.util.List;
+import dev.fenek.chats.dto.*;
+import dev.fenek.chats.service.ChatService;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.ArrayList;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 public class ChatController {
 
-    private final List<Chat> chats = new ArrayList<>(Arrays.asList(
-            new Chat(1L, "General"),
-            new Chat(2L, "Random"),
-            new Chat(3L, "Tech")));
-    private final AtomicLong idGenerator = new AtomicLong(4);
+    private final ChatService chatService;
 
-    static class Chat {
-        private Long id;
-        private String name;
-
-        public Chat(Long id, String name) {
-            this.id = id;
-            this.name = name;
-        }
-
-        public Long getId() {
-            return id;
-        }
-
-        public String getName() {
-            return name;
-        }
+    public ChatController(ChatService chatService) {
+        this.chatService = chatService;
     }
 
-    static class ChatRequest {
-        private String name;
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
+    @GetMapping("/test")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> test(@AuthenticationPrincipal Jwt jwt) {
+        return ResponseEntity.ok().build();
     }
 
-    @GetMapping()
-    public List<Chat> getChats() {
-        return chats;
+    @PostMapping
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ChatResponse> createChat(@RequestBody ChatCreateRequest request) {
+        ChatResponse response = chatService.createChat(request);
+        return ResponseEntity.ok(response);
     }
 
-    @PostMapping()
-    public Chat addChat(@RequestBody ChatRequest request) {
-        Chat newChat = new Chat(idGenerator.getAndIncrement(), request.getName());
-        chats.add(newChat);
-        return newChat;
+    @GetMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ChatResponse> getChat(@PathVariable Long id) {
+        ChatResponse response = chatService.getChatById(id);
+        return ResponseEntity.ok(response);
+    }
+
+    // @GetMapping
+    // public ResponseEntity<ChatResponse> getUserChats() {
+    // ChatResponse response = chatService.getChatsByUserId(how to take the user id
+    // from the authentication bearer);
+    // return ResponseEntity.ok(response);
+    // }
+
+    // @PatchMapping("/{id}")
+    // public ResponseEntity<ChatResponse> patchChat(@RequestBody ???, @PathVariable
+    // Long id) {
+    // ChatResponse response = chatService.patchChatById()
+    // }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> deleteChat(@PathVariable Long id) {
+        chatService.deleteChat(id);
+        return ResponseEntity.noContent().build();
     }
 }
