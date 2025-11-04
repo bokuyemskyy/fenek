@@ -24,10 +24,11 @@ dependencies {
 
 	implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    implementation("org.springframework.boot:spring-boot-starter-security")
 
+    implementation("org.springframework.boot:spring-boot-starter-security")
 	implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
 	implementation("org.keycloak:keycloak-admin-client:26.0.2")
+	
     implementation("org.postgresql:postgresql")
 
 	implementation("org.hibernate.validator:hibernate-validator")

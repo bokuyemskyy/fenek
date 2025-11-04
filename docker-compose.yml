@@ -8,6 +8,8 @@ services:
       KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
       KEYCLOAK_ADMIN: amon
       KEYCLOAK_ADMIN_PASSWORD: 123123
+      # KC_HOSTNAME: http://localhost:8080/
+      # KC_HOSTNAME_BACKCHANNEL_DYNAMIC: true
     volumes:
       - ./backend/keycloak/theme/test:/opt/keycloak/themes/test
     ports:
