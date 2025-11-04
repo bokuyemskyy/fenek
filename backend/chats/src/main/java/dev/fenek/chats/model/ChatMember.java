@@ -14,7 +14,7 @@ import jakarta.persistence.*;
 public class ChatMember {
 
     @Id
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "chat_id", nullable = false, updatable = false)
     private Chat chat;
 

@@ -12,6 +12,8 @@ import java.util.UUID;
 public interface ChatMemberRepository extends JpaRepository<ChatMember, ChatMemberId> {
     List<ChatMember> findByChatId(Long chatId);
 
+    ChatMember findByChatIdAndUserId(Long chatId, UUID userId);
+
     void deleteByChatId(Long chatId);
 
     List<ChatMember> findByUserId(UUID userId);
