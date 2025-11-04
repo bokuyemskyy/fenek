@@ -24,6 +24,7 @@ dependencies {
 
 	implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+	implementation("org.springframework.boot:spring-boot-starter-websocket")
 
     implementation("org.springframework.boot:spring-boot-starter-security")
 	implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
@@ -32,7 +33,6 @@ dependencies {
     implementation("org.postgresql:postgresql")
 
 	implementation("org.hibernate.validator:hibernate-validator")
-
 
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")

@@ -4,6 +4,10 @@ import dev.fenek.chats.dto.*;
 import dev.fenek.chats.service.ChatService;
 
 import org.springframework.security.oauth2.jwt.Jwt;
+
+import java.util.List;
+import java.util.UUID;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -26,35 +30,46 @@ public class ChatController {
 
     @PostMapping
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ChatResponse> createChat(@RequestBody ChatCreateRequest request) {
-        ChatResponse response = chatService.createChat(request);
+    public ResponseEntity<ChatResponse> createChat(@AuthenticationPrincipal Jwt jwt,
+            @RequestBody ChatCreateRequest request) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        ChatResponse response = chatService.createChat(userId, request);
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<ChatResponse> getChat(@PathVariable Long id) {
-        ChatResponse response = chatService.getChatById(id);
+    @GetMapping("/{chatId}")
+    @PreAuthorize("isAuthenticated() && @chatPermissionEvaluator.canAccessChat(#chatId, authentication)")
+    public ResponseEntity<ChatResponse> getChat(@PathVariable Long chatId) {
+        ChatResponse response = chatService.getChatById(chatId);
         return ResponseEntity.ok(response);
     }
 
-    // @GetMapping
-    // public ResponseEntity<ChatResponse> getUserChats() {
-    // ChatResponse response = chatService.getChatsByUserId(how to take the user id
-    // from the authentication bearer);
-    // return ResponseEntity.ok(response);
-    // }
+    @GetMapping("/{chatId}/messages")
+    @PreAuthorize("isAuthenticated() && @chatPermissionEvaluator.canAccessChat(#chatId, authentication)")
+    public ResponseEntity<List<MessageDto>> getChatMessages(@PathVariable Long chatId) {
+        List<MessageDto> response = chatService.getChatMessages(chatId);
+        return ResponseEntity.ok(response);
+    }
 
-    // @PatchMapping("/{id}")
-    // public ResponseEntity<ChatResponse> patchChat(@RequestBody ???, @PathVariable
-    // Long id) {
-    // ChatResponse response = chatService.patchChatById()
-    // }
-
-    @DeleteMapping("/{id}")
+    @GetMapping
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Void> deleteChat(@PathVariable Long id) {
-        chatService.deleteChat(id);
+    public ResponseEntity<List<ChatResponse>> getUserChats(@AuthenticationPrincipal Jwt jwt) {
+        UUID userId = UUID.fromString(jwt.getSubject());
+        List<ChatResponse> response = chatService.getUserChats(userId);
+        return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/{chatId}")
+    @PreAuthorize("isAuthenticated() && @chatPermissionEvaluator.canManageChat(#chatId, authentication)")
+    public ResponseEntity<ChatResponse> patchChat(@RequestBody ChatPatchRequest request, @PathVariable Long chatId) {
+        ChatResponse response = chatService.patchChatById(chatId, request);
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/{chatId}")
+    @PreAuthorize("isAuthenticated() && @chatPermissionEvaluator.canManageChat(#chatId, authentication)")
+    public ResponseEntity<Void> deleteChat(@PathVariable Long chatId) {
+        chatService.deleteChat(chatId);
         return ResponseEntity.noContent().build();
     }
 }
