@@ -3,25 +3,28 @@ package dev.fenek.chats.mapper;
 import dev.fenek.chats.dto.*;
 import dev.fenek.chats.model.*;
 
-import java.util.*;
+import java.util.List;
 
+import org.springframework.stereotype.Component;
+
+@Component
 public class ChatMapper {
 
-    public static Chat toEntity(ChatCreateRequest request) {
+    public Chat toEntity(ChatCreateRequest dto) {
         Chat chat = new Chat();
-        chat.setTitle(request.getTitle());
-        chat.setDescription(request.getDescription());
-        chat.setGroup(request.isGroup());
+        chat.setTitle(dto.getTitle());
+        chat.setDescription(dto.getDescription());
+        chat.setGroup(dto.isGroup());
         return chat;
     }
 
-    public static ChatResponse toDto(Chat chat, List<ChatMember> members) {
+    public ChatResponse toDto(Chat entity, List<ChatMember> members) {
         ChatResponse dto = new ChatResponse();
-        dto.setId(chat.getId());
-        dto.setTitle(chat.getTitle());
-        dto.setDescription(chat.getDescription());
-        dto.setGroup(chat.isGroup());
-        dto.setCreatedAt(chat.getCreatedAt());
+        dto.setId(entity.getId());
+        dto.setTitle(entity.getTitle());
+        dto.setDescription(entity.getDescription());
+        dto.setGroup(entity.isGroup());
+        dto.setCreatedAt(entity.getCreatedAt());
         dto.setMembers(
                 members.stream()
                         .map(m -> new ChatMemberResponse(m.getUserId(), m.getRole().name()))
