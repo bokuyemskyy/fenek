@@ -46,8 +46,8 @@ public class ChatController {
 
     @GetMapping("/{chatId}/messages")
     @PreAuthorize("isAuthenticated() && @chatPermissionEvaluator.canAccessChat(#chatId, authentication)")
-    public ResponseEntity<List<MessageDto>> getChatMessages(@PathVariable Long chatId) {
-        List<MessageDto> response = chatService.getChatMessages(chatId);
+    public ResponseEntity<List<MessageResponse>> getChatMessages(@PathVariable Long chatId) {
+        List<MessageResponse> response = chatService.getChatMessages(chatId);
         return ResponseEntity.ok(response);
     }
 

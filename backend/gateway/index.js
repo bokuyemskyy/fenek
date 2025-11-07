@@ -5,10 +5,11 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 
 const app = express();
 
-const USERS_URL = process.env.USERS_SERVICE_URL || 'http://localhost:8081';
-const CHATS_URL = process.env.CHATS_SERVICE_URL || 'http://localhost:8080';
+const USERS_URL = process.env.USERS_SERVICE_URL;
+const CHATS_URL = process.env.CHATS_SERVICE_URL;
+const CORS_ORIGIN = process.env.CORS_ORIGIN;
 
-app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
+app.use(cors({ origin: CORS_ORIGIN, credentials: true }));
 app.use(rateLimit({ windowMs: 60000, max: 100 }));
 
 app.use('/users', createProxyMiddleware({ target: USERS_URL, changeOrigin: true }));
@@ -20,7 +21,7 @@ const wsProxy = createProxyMiddleware({
     changeOrigin: true,
     pathRewrite: { '^/ws': '' },
     onProxyRes(proxyRes) {
-        proxyRes.headers['access-control-allow-origin'] = 'http://localhost:5173';
+        proxyRes.headers['access-control-allow-origin'] = CORS_ORIGIN;
         proxyRes.headers['access-control-allow-credentials'] = 'true';
     }
 });

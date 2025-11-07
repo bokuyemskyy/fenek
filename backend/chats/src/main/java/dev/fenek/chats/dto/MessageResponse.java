@@ -10,15 +10,11 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class MessageDto {
-
+public class MessageResponse {
     private Long id;
     private UUID senderId;
     private String content;
     private Instant createdAt;
     private Instant editedAt;
-    private Instant deletedAt;
-    private Long chatId;
     private Long replyToId;
-
 }

@@ -12,7 +12,7 @@ import org.springframework.web.client.RestTemplate;
 import dev.fenek.chats.dto.ChatCreateRequest;
 import dev.fenek.chats.dto.ChatPatchRequest;
 import dev.fenek.chats.dto.ChatResponse;
-import dev.fenek.chats.dto.MessageDto;
+import dev.fenek.chats.dto.MessageResponse;
 import dev.fenek.chats.mapper.ChatMapper;
 import dev.fenek.chats.mapper.MessageMapper;
 import dev.fenek.chats.model.Chat;
@@ -111,9 +111,9 @@ public class ChatService {
         return chatMapper.toDto(chat, members);
     }
 
-    public List<MessageDto> getChatMessages(Long chatId) {
+    public List<MessageResponse> getChatMessages(Long chatId) {
         List<Message> messages = messageRepository.findByChatIdOrderByCreatedAtAsc(chatId);
-        List<MessageDto> messageResponses = new ArrayList<>();
+        List<MessageResponse> messageResponses = new ArrayList<>();
         for (Message message : messages) {
             messageResponses.add(messageMapper.toDto(message));
         }
@@ -151,7 +151,7 @@ public class ChatService {
         }
     }
 
-    public void saveMessage(MessageDto messageRequest) {
-        // Implementation for saving message to the database
+    public void saveMessage(MessageResponse messageRequest, Long chatId, UUID senderId) {
+
     }
 }

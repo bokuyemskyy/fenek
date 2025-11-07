@@ -1,6 +1,6 @@
 package dev.fenek.chats.controller;
 
-import dev.fenek.chats.dto.MessageDto;
+import dev.fenek.chats.dto.MessageResponse;
 import dev.fenek.chats.service.ChatService;
 
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -26,14 +26,12 @@ public class ChatWebSocketController {
     @MessageMapping("/chat.{chatId}.send")
     public void sendMessage(
             @DestinationVariable Long chatId,
-            MessageDto message,
+            MessageResponse message,
             SimpMessageHeaderAccessor headerAccessor) {
 
         UUID userId = UUID.fromString(headerAccessor.getUser().getName());
-        message.setSenderId(userId);
-        message.setChatId(chatId);
 
-        chatService.saveMessage(message);
+        chatService.saveMessage(message, chatId, userId);
 
         messagingTemplate.convertAndSend("/topic/chat." + chatId, message);
     }

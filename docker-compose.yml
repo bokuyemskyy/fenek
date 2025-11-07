@@ -41,11 +41,14 @@ services:
     ports:
       - 3000:3000
     environment:
-      - USERS_SERVICE_URL="http://users:8080"
+      - USERS_SERVICE_URL=http://users:8080
       - CHATS_SERVICE_URL=http://chats:8080
+      - CORS_ORIGIN=http://localhost:5173
     networks:
       - internal
       - public
+    volumes:
+      - ./backend/gateway:/app
     depends_on:
       - chats
       #      - users

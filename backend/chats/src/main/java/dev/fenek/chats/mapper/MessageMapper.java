@@ -1,54 +1,36 @@
 package dev.fenek.chats.mapper;
 
-import org.springframework.stereotype.Component;
+import java.util.UUID;
 
-import dev.fenek.chats.dto.MessageDto;
+import dev.fenek.chats.dto.MessageRequest;
+import dev.fenek.chats.dto.MessageResponse;
 import dev.fenek.chats.model.Message;
 import dev.fenek.chats.model.Chat;
-import dev.fenek.chats.repository.ChatRepository;
-import dev.fenek.chats.repository.MessageRepository;
 
-@Component
 public class MessageMapper {
 
-    private final ChatRepository chatRepository;
-    private final MessageRepository messageRepository;
-
-    public MessageMapper(ChatRepository chatRepository, MessageRepository messageRepository) {
-        this.chatRepository = chatRepository;
-        this.messageRepository = messageRepository;
+    private MessageMapper() {
     }
 
-    public Message toEntity(MessageDto dto) {
+    public static Message toEntity(MessageRequest dto, UUID senderId, Chat chat, Message replyTo) {
         Message message = new Message();
-
-        Chat chat = chatRepository.findById(dto.getChatId())
-                .orElseThrow(() -> new IllegalArgumentException("Chat not found: " + dto.getChatId()));
         message.setChat(chat);
-        message.setSenderId(dto.getSenderId());
+        message.setSenderId(senderId);
         message.setContent(dto.getContent());
-        message.setEditedAt(dto.getEditedAt());
-        message.setDeletedAt(dto.getDeletedAt());
-
-        if (dto.getReplyToId() != null) {
-            Message replyTo = messageRepository.findById(dto.getReplyToId())
-                    .orElseThrow(() -> new IllegalArgumentException("Reply message not found: " + dto.getReplyToId()));
+        if (replyTo != null) {
             message.setReplyTo(replyTo);
         }
-
         return message;
     }
 
-    public MessageDto toDto(Message entity) {
-        MessageDto dto = new MessageDto();
+    public static MessageResponse toDto(Message entity) {
+        MessageResponse dto = new MessageResponse();
         dto.setId(entity.getId());
-        dto.setChatId(entity.getChat().getId());
+        dto.setSenderId(entity.getSenderId());
         dto.setContent(entity.getContent());
         dto.setCreatedAt(entity.getCreatedAt());
-        dto.setDeletedAt(entity.getDeletedAt());
         dto.setEditedAt(entity.getEditedAt());
-        dto.setReplyToId(entity.getReplyTo().getId());
-        dto.setSenderId(entity.getSenderId());
+        dto.setReplyToId(entity.getReplyTo() != null ? entity.getReplyTo().getId() : null);
         return dto;
     }
 }

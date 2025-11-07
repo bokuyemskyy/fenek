@@ -5,12 +5,12 @@ import dev.fenek.chats.model.*;
 
 import java.util.List;
 
-import org.springframework.stereotype.Component;
-
-@Component
 public class ChatMapper {
 
-    public Chat toEntity(ChatCreateRequest dto) {
+    private ChatMapper() {
+    }
+
+    public static Chat toEntity(ChatCreateRequest dto) {
         Chat chat = new Chat();
         chat.setTitle(dto.getTitle());
         chat.setDescription(dto.getDescription());
@@ -18,7 +18,7 @@ public class ChatMapper {
         return chat;
     }
 
-    public ChatResponse toDto(Chat entity, List<ChatMember> members) {
+    public static ChatResponse toDto(Chat entity, List<ChatMember> members) {
         ChatResponse dto = new ChatResponse();
         dto.setId(entity.getId());
         dto.setTitle(entity.getTitle());
