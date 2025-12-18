@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { MessageSquare, Zap, Shield, Globe } from "lucide-react";
 import FenekLogo from '../assets/fenek.svg';
 
-const Welcome = () => {
+const WelcomePage = () => {
     const { keycloak } = useKeycloak();
     const navigate = useNavigate();
 
@@ -128,4 +128,4 @@ const Welcome = () => {
     );
 };
 
-export default Welcome;
+export default WelcomePage;

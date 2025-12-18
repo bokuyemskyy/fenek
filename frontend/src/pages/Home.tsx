@@ -5,6 +5,9 @@ import { Client } from '@stomp/stompjs';
 import type { IMessage } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 
+
+import { useAuth } from "../auth/AuthContext";
+
 interface Chat {
     id: number;
     title: string;
@@ -22,7 +25,12 @@ interface Message {
     timestamp: string;
 }
 
-const Home = () => {
+const HomePage = () => {
+    const { user, loading, logout } = useAuth();
+
+    if (loading) return <div>Loading...</div>;
+    if (!user) return <div>Not authenticated</div>;
+
     const [chats, setChats] = useState<Chat[]>([]);
     const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
     const [messages, setMessages] = useState<Message[]>([]);
@@ -145,4 +153,4 @@ const Home = () => {
     );
 };
 
-export default Home;
+export default HomePage;
