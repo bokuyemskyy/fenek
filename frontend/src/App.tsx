@@ -1,28 +1,20 @@
-import React from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Login } from "./pages/Login";
-import { Chats } from "./pages/Chats";
-import { LoginRedirect } from "./pages/LoginRedirect";
-import { ProtectedRoute } from "./auth/ProtectedRoute";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Login from "./pages/Login";
+import Chats from "./pages/Chats";
 import { AuthProvider } from "./auth/AuthContext";
-const App: React.FC = () => {
+import Home from "./pages/Home";
+import ProtectedRoute from "./auth/ProtectedRoute";
+
+export default function App() {
   return (
     <AuthProvider>
-      <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/oauth2/callback/google" element={<LoginRedirect />} />
-        <Route
-          path="/chats"
-          element={
-            <ProtectedRoute>
-              <Chats />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/chats" element={<ProtectedRoute><Chats /></ProtectedRoute>} />
+        </Routes>
+      </Router>
     </AuthProvider>
   );
 };
-
-export default App;

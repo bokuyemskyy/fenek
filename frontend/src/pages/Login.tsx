@@ -1,13 +1,15 @@
 import React from "react";
 
-export const Login: React.FC = () => {
-    const backendUrl = "http://localhost:8080";
-
+export default function Login() {
     return (
         <div>
             <h1>Login</h1>
-            <a href={`${backendUrl}/oauth2/authorization/google`}>
-                <button>Login with Google</button>
+            <a href="http://localhost:8080/oauth2/authorization/github">
+                Login with GitHub
+            </a>
+            <br></br>
+            <a href="http://localhost:8080/oauth2/authorization/google">
+                Login with Google
             </a>
         </div>
     );

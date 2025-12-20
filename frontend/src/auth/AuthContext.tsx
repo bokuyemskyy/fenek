@@ -1,86 +1,65 @@
-// auth/AuthContext.tsx
-import React, { createContext, useContext, useState, useCallback } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
-const ACCESS_TOKEN_KEY = "accessToken";
-const REFRESH_TOKEN_KEY = "refreshToken";
-const USER_INFO_KEY = "userInfo";
-
-export interface UserInfo {
+type User = {
     id: string;
     email: string;
+    username: string;
     displayName: string;
-    avatarUrl?: string;
-}
+    avatarUrl: string;
+};
 
-export interface AuthState {
-    accessToken: string | null;
-    refreshToken: string | null;
-    user: UserInfo | null;
+type AuthContextType = {
+    user: User | null;
     isAuthenticated: boolean;
-}
+    loading: boolean;
+    logout: () => void;
+    refreshUser: () => Promise<void>;
+};
 
-interface AuthContextProps extends AuthState {
-    setAuthData: (accessToken: string, refreshToken: string, user: UserInfo) => void;
-    clearAuthData: () => void;
-    refreshAccessToken: () => Promise<boolean>;
-}
+const AuthContext = createContext<AuthContextType | null>(null);
 
-const AuthContext = createContext<AuthContextProps | undefined>(undefined);
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+    const [user, setUser] = useState<User | null>(null);
+    const [loading, setLoading] = useState(true);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [auth, setAuth] = useState<AuthState>(() => ({
-        accessToken: localStorage.getItem(ACCESS_TOKEN_KEY),
-        refreshToken: localStorage.getItem(REFRESH_TOKEN_KEY),
-        user: localStorage.getItem(USER_INFO_KEY)
-            ? JSON.parse(localStorage.getItem(USER_INFO_KEY)!)
-            : null,
-        isAuthenticated: !!localStorage.getItem(ACCESS_TOKEN_KEY),
-    }));
+    const isAuthenticated = !!user;
 
-    const setAuthData = useCallback(
-        (accessToken: string, refreshToken: string, user: UserInfo) => {
-            localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
-            localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
-            localStorage.setItem(USER_INFO_KEY, JSON.stringify(user));
-            setAuth({ accessToken, refreshToken, user, isAuthenticated: true });
-        },
-        []
-    );
+    async function refreshUser() {
+        try {
+            const res = await fetch("http://localhost:8080/api/users/me", {
+                credentials: "include",
+            });
+            if (!res.ok) throw new Error();
+            setUser(await res.json());
+        } catch {
+            setUser(null);
+        } finally {
+            setLoading(false);
+        }
+    }
 
-    const clearAuthData = useCallback(() => {
-        localStorage.removeItem(ACCESS_TOKEN_KEY);
-        localStorage.removeItem(REFRESH_TOKEN_KEY);
-        localStorage.removeItem(USER_INFO_KEY);
-        setAuth({ accessToken: null, refreshToken: null, user: null, isAuthenticated: false });
+    function logout() {
+        fetch("http://localhost:8080/api/auth/logout", {
+            method: "POST",
+            credentials: "include",
+        }).finally(() => setUser(null));
+    }
+
+    useEffect(() => {
+        refreshUser();
     }, []);
 
-    const refreshAccessToken = useCallback(async () => {
-        if (!auth.refreshToken) return false;
-        try {
-            const res = await fetch(`http://localhost:8080/auth/refresh?refreshToken=${auth.refreshToken}`, {
-                method: "POST",
-            });
-            if (!res.ok) throw new Error("Refresh failed");
-            const data = await res.json();
-            if (!auth.user) return false;
-            setAuthData(data.accessToken, data.refreshToken, auth.user);
-            return true;
-        } catch {
-            clearAuthData();
-            return false;
-        }
-    }, [auth.refreshToken, auth.user, setAuthData, clearAuthData]);
-
     return (
-        <AuthContext.Provider value={{ ...auth, setAuthData, clearAuthData, refreshAccessToken }}>
+        <AuthContext.Provider
+            value={{ user, isAuthenticated, loading, logout, refreshUser }}
+        >
             {children}
         </AuthContext.Provider>
     );
-};
+}
 
-// Hook to consume auth anywhere
-export const useAuth = (): AuthContextProps => {
-    const context = useContext(AuthContext);
-    if (!context) throw new Error("useAuth must be used within an AuthProvider");
-    return context;
-};
+export function useAuth() {
+    const ctx = useContext(AuthContext);
+    if (!ctx) throw new Error("useAuth must be used inside AuthProvider");
+    return ctx;
+}
