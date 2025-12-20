@@ -6,6 +6,8 @@ import lombok.*;
 import java.time.Instant;
 import java.util.UUID;
 
+import dev.fenek.users.auth.AuthProvider;
+
 @Getter
 @Setter
 @Entity
@@ -62,8 +64,4 @@ public class User {
         this.lastLoginAt = Instant.now();
     }
 
-    public enum AuthProvider {
-        GOOGLE,
-        GITHUB
-    }
 }

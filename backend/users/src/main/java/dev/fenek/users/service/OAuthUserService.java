@@ -1,8 +1,8 @@
 package dev.fenek.users.service;
 
+import dev.fenek.users.auth.AuthProvider;
 import dev.fenek.users.auth.OAuthUserInfo;
 import dev.fenek.users.model.User;
-import dev.fenek.users.model.User.AuthProvider;
 import dev.fenek.users.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,11 +27,6 @@ public class OAuthUserService {
     private User createFromOAuth(
             AuthProvider provider,
             OAuthUserInfo info) {
-        if (info.email() == null || info.email().isBlank()) {
-            throw new IllegalStateException(
-                    "Email is required to create a user");
-        }
-
         return userRepository.save(
                 User.builder()
                         .provider(provider)

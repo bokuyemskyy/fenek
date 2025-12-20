@@ -1,7 +1,7 @@
 package dev.fenek.users.repository;
 
 import dev.fenek.users.model.User;
-import dev.fenek.users.model.User.AuthProvider;
+import dev.fenek.users.auth.AuthProvider;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
