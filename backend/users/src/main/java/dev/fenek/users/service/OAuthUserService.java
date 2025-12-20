@@ -1,7 +1,7 @@
 package dev.fenek.users.service;
 
 import dev.fenek.users.auth.AuthProvider;
-import dev.fenek.users.auth.OAuthUserInfo;
+import dev.fenek.users.dto.OAuth2UserInfo;
 import dev.fenek.users.model.User;
 import dev.fenek.users.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +17,7 @@ public class OAuthUserService {
     @Transactional
     public User findOrCreate(
             AuthProvider provider,
-            OAuthUserInfo userInfo) {
+            OAuth2UserInfo userInfo) {
         return userRepository
                 .findByProviderAndProviderId(provider, userInfo.providerId())
                 .map(existing -> updateFromOAuth(existing, userInfo))
@@ -26,7 +26,7 @@ public class OAuthUserService {
 
     private User createFromOAuth(
             AuthProvider provider,
-            OAuthUserInfo info) {
+            OAuth2UserInfo info) {
         return userRepository.save(
                 User.builder()
                         .provider(provider)
@@ -38,7 +38,7 @@ public class OAuthUserService {
 
     private User updateFromOAuth(
             User user,
-            OAuthUserInfo info) {
+            OAuth2UserInfo info) {
         user.setDisplayName(info.name());
         return user;
     }

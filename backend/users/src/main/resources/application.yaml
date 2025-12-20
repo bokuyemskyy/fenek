@@ -30,9 +30,15 @@ spring:
             client-id: ${GOOGLE_CLIENT_ID}
             client-secret: ${GOOGLE_CLIENT_SECRET}
             
-jwt:
-  secret: ${JWT_SECRET}
-  expiration-seconds: ${JWT_EXPIRATION}
-
 app:
   frontend-url: ${FRONTEND_URL}
+  jwt:
+    secret-base-64: ${JWT_SECRET_BASE_64}
+    expiration-seconds: 3600
+    refresh-expiration-seconds: 604800
+  cookie:
+    secure: false
+    same-site: Strict
+
+server:
+  forward-headers-strategy: native

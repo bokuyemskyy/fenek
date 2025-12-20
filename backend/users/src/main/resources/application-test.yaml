@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: users
+
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+    show-sql: true
+            
+app:
+  frontend-url: 123
+  jwt:
+    secret-base-64: 9p619sjdCSPmvDw785S1K3keqaAybG1erKaU7XXV8ws=
+    expiration-seconds: 3600
+    refresh-expiration-seconds: 604800
+  cookie:
+    secure: false
+    same-site: Strict
+
+server:
+  forward-headers-strategy: native

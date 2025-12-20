@@ -9,7 +9,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
-import dev.fenek.users.dto.OAuthUserInfo;
+import dev.fenek.users.dto.OAuth2UserInfo;
 import dev.fenek.users.model.User;
 import dev.fenek.users.service.JwtService;
 import dev.fenek.users.service.OAuthUserService;
@@ -42,7 +42,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                 String registrationId = authToken.getAuthorizedClientRegistrationId();
                 OAuth2User oAuth2User = authToken.getPrincipal();
                 AuthProvider provider = AuthProvider.valueOf(registrationId.toUpperCase());
-                OAuthUserInfo userInfo = OAuth2UserInfoFactory.from(provider, oAuth2User);
+                OAuth2UserInfo userInfo = OAuth2UserInfoFactory.from(provider, oAuth2User);
                 User user = oAuthUserService.findOrCreate(provider, userInfo);
 
                 String accessToken = jwtService.createToken(user);
