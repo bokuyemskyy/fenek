@@ -1,14 +1,4 @@
-import { useNavigate } from "react-router-dom"
 
-export default function Home() {
-    const navigate = useNavigate()
-    return (
-        <div>
-            <p>HELLO</p>
-            <button onClick={() => navigate("/login")}>Login</button>
-        </div>
-    )
-}
 
 // import { useEffect, useState, useRef } from 'react';
 // import { GATEWAY_URL } from '../config';
