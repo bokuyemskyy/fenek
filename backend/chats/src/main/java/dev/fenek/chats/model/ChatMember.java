@@ -2,32 +2,40 @@ package dev.fenek.chats.model;
 
 import java.time.Instant;
 import java.util.UUID;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "chat_members")
-@IdClass(ChatMemberId.class)
+@Table(name = "chat_members", uniqueConstraints = @UniqueConstraint(columnNames = { "chatId", "uid" }), indexes = {
+        @Index(name = "chat_members_idx_chat", columnList = "chatId"),
+        @Index(name = "chat_members_idx_uid", columnList = "userId")
+})
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ChatMember {
-
     @Id
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "chat_id", nullable = false, updatable = false)
+    @GeneratedValue
+    private UUID id;
+
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     private Chat chat;
 
-    @Id
-    @Column(name = "user_id", nullable = false, updatable = false)
+    @Column(nullable = false, updatable = false)
     private UUID userId;
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private Role role;
 
-    @Column(name = "joined_at", nullable = false, updatable = false)
-    @Setter(lombok.AccessLevel.NONE)
+    @Column(nullable = false, updatable = false)
     private Instant joinedAt;
 
     @PrePersist
@@ -37,6 +45,7 @@ public class ChatMember {
 
     public enum Role {
         MEMBER,
-        ADMIN
+        ADMIN,
+        OWNER
     }
 }

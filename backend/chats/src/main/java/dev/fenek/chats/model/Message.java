@@ -3,53 +3,69 @@ package dev.fenek.chats.model;
 import java.time.Instant;
 import java.util.UUID;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "messages")
+@Table(name = "messages", indexes = {
+        @Index(name = "messages_idx_chat", columnList = "chatId"),
+        @Index(name = "messages_idx_sender", columnList = "senderId"),
+        @Index(name = "messages_idx_created", columnList = "createdAt"),
+        @Index(name = "messages_idx_reply_to", columnList = "replyToId")
+})
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Message {
-
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Setter(lombok.AccessLevel.NONE)
+    @GeneratedValue
     @Column(nullable = false, updatable = false)
-    private Long id;
+    private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "chat_id", nullable = false, updatable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private Chat chat;
 
-    @Column(name = "sender_id", nullable = false, updatable = false)
+    @Column(nullable = false, updatable = false)
     private UUID senderId;
 
-    @Column(columnDefinition = "TEXT", nullable = false)
+    @Column(nullable = false)
     private String content;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    @Setter(lombok.AccessLevel.NONE)
+    @Column(nullable = false, updatable = false)
     private Instant createdAt;
 
-    @Column(name = "edited_at")
     private Instant editedAt;
 
-    @Column(name = "deleted_at")
     private Instant deletedAt;
 
+    @JoinColumn(updatable = false)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "reply_to", updatable = false)
     private Message replyTo;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Type type;
 
     @PrePersist
     protected void onCreate() {
         createdAt = Instant.now();
 
-        if (replyTo != null && replyTo.equals(this)) {
+        if (replyTo != null && replyTo.getId().equals(this.id)) {
             throw new IllegalStateException("Message cannot reply to itself");
         }
+    }
+
+    public enum Type {
+        TEXT,
+        IMAGE,
+        FILE,
+        SYSTEM
     }
 }
