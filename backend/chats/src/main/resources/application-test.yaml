@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: chats
+
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  rabbitmq:
+    addresses: ${RABBITMQ_URL}
+    virtual-host: /
+    listener:
+      simple:
+        retry:
+          enabled: true
+          initial-interval: 1000
+          max-attempts: 5
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+    show-sql: true
+
+app:
+  jwt: 
+    secret-base-64: ${JWT_SECRET_BASE_64}

@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: chats
+
+  datasource:
+    url: ${POSTGRES_URL}
+    driver-class-name: org.postgresql.Driver
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+
+  rabbitmq:
+    addresses: ${RABBITMQ_URL}
+    virtual-host: /
+    listener:
+      simple:
+        retry:
+          enabled: true
+          initial-interval: 1000
+          max-attempts: 5
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+app:
+  jwt: 
+    secret-base-64: ${JWT_SECRET_BASE_64}
