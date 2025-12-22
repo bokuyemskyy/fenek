@@ -16,6 +16,16 @@ spring:
       ddl-auto: update
     show-sql: true
 
+  rabbitmq:
+    addresses: ${RABBITMQ_URL}
+    virtual-host: /
+    listener:
+      simple:
+        retry:
+          enabled: true
+          initial-interval: 1000
+          max-attempts: 5
+          
   security:
     oauth2:
       client:

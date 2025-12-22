@@ -6,8 +6,6 @@ import lombok.*;
 import java.time.Instant;
 import java.util.UUID;
 
-import dev.fenek.users.auth.AuthProvider;
-
 @Getter
 @Setter
 @Entity
@@ -41,7 +39,7 @@ public class User {
 
     @Column(nullable = false, updatable = false)
     @Enumerated(EnumType.STRING)
-    private AuthProvider provider;
+    private Provider provider;
 
     @Column(nullable = false, updatable = false, length = 100)
     private String providerId;
@@ -64,4 +62,8 @@ public class User {
         this.lastLoginAt = Instant.now();
     }
 
+    public enum Provider {
+        GOOGLE,
+        GITHUB
+    }
 }

@@ -2,6 +2,7 @@ package dev.fenek.users.service;
 
 import java.time.Instant;
 import java.util.Date;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -46,13 +47,17 @@ public class JwtService {
                 .compact();
     }
 
-    public UUID validateAndGetUserId(String token) {
-        var claims = Jwts.parserBuilder()
-                .setSigningKey(Keys.hmacShaKeyFor(secretBytes))
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+    public Optional<UUID> validateAndGetUserId(String token) {
+        try {
+            var claims = Jwts.parserBuilder()
+                    .setSigningKey(Keys.hmacShaKeyFor(secretBytes))
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
 
-        return UUID.fromString(claims.getSubject());
+            return Optional.of(UUID.fromString(claims.getSubject()));
+        } catch (Exception e) {
+            return Optional.empty();
+        }
     }
 }

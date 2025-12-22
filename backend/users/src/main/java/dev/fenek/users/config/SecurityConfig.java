@@ -18,6 +18,7 @@ import dev.fenek.users.auth.JwtAuthenticationFilter;
 import dev.fenek.users.auth.OAuth2SuccessHandler;
 import dev.fenek.users.repository.UserRepository;
 import dev.fenek.users.service.JwtService;
+import dev.fenek.users.service.TokenCookieService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
@@ -29,6 +30,7 @@ public class SecurityConfig {
         private final OAuth2SuccessHandler oAuth2SuccessHandler;
         private final JwtService jwtService;
         private final UserRepository userRepository;
+        private final TokenCookieService tokenCookieService;
 
         @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -40,7 +42,9 @@ public class SecurityConfig {
                                 .httpBasic(AbstractHttpConfigurer::disable)
                                 .sessionManagement(session -> session
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                                .addFilterBefore(new JwtAuthenticationFilter(jwtService, userRepository),
+                                .addFilterBefore(
+                                                new JwtAuthenticationFilter(jwtService, tokenCookieService,
+                                                                userRepository),
                                                 org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
                                 .authorizeHttpRequests(auth -> auth
                                                 .requestMatchers(

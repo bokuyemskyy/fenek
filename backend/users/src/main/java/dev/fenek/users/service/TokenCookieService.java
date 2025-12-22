@@ -63,4 +63,19 @@ public class TokenCookieService {
         return Optional.empty();
     }
 
+    public Optional<String> getAccessToken(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("accessToken".equals(cookie.getName())) {
+                    String rawToken = cookie.getValue();
+                    return Optional.of(rawToken);
+                }
+            }
+        }
+
+        return Optional.empty();
+    }
+
 }
