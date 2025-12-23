@@ -5,7 +5,9 @@ type User = {
     email: string;
     username: string;
     displayName: string;
+    color: string;
     avatarUrl: string;
+    isComplete: boolean;
 };
 
 type AuthContextType = {

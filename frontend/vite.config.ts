@@ -14,7 +14,7 @@ export default defineConfig({
   ],
   server: {
     port: 3000,
-    strictPort: true
+    allowedHosts: ['littery-unpompously-malinda.ngrok-free.dev'],
   }
   ,
   preview: {
