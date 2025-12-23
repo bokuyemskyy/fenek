@@ -47,7 +47,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                 Provider provider = Provider.valueOf(registrationId.toUpperCase());
                 OAuth2UserInfo userInfo = OAuth2UserInfoFactory.from(provider, oAuth2User);
 
-                OAuth2LoginResult result = oAuthUserService.findOrCreate(provider, userInfo);
+                OAuth2LoginResult result = oAuthUserService.findOrCreateUser(provider, userInfo);
 
                 User user = result.user();
 

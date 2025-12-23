@@ -14,25 +14,27 @@ import org.springframework.transaction.annotation.Transactional;
 public class OAuth2UserService {
 
     private final UserRepository userRepository;
+    private final UserEventPublisherService publisher;
 
     @Transactional
-    public OAuth2LoginResult findOrCreate(
+    public OAuth2LoginResult findOrCreateUser(
             Provider provider,
             OAuth2UserInfo userInfo) {
 
         return userRepository
                 .findByProviderAndProviderId(provider, userInfo.providerId())
                 .map(existing -> {
-                    User updated = updateFromOAuth(existing, userInfo);
+                    User updated = updateFromOAuth2(existing, userInfo);
                     return new OAuth2LoginResult(updated, false);
                 })
                 .orElseGet(() -> {
-                    User created = createFromOAuth(provider, userInfo);
+                    User created = createFromOAuth2(provider, userInfo);
+                    publisher.publishUserCreated(created);
                     return new OAuth2LoginResult(created, true);
                 });
     }
 
-    private User createFromOAuth(
+    private User createFromOAuth2(
             Provider provider,
             OAuth2UserInfo info) {
         return userRepository.save(
@@ -44,7 +46,7 @@ public class OAuth2UserService {
                         .build());
     }
 
-    private User updateFromOAuth(
+    private User updateFromOAuth2(
             User user,
             OAuth2UserInfo info) {
         user.setEmail(info.email());
