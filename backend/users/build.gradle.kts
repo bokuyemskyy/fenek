@@ -32,6 +32,8 @@ dependencies {
 	compileOnly("org.projectlombok:lombok")
 	annotationProcessor("org.projectlombok:lombok")
 
+	implementation("software.amazon.awssdk:s3:2.29.10")
+	
 	runtimeOnly("com.h2database:h2")
     implementation("org.postgresql:postgresql")
 	implementation("org.hibernate.validator:hibernate-validator")

@@ -11,7 +11,7 @@ import lombok.Setter;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "chat_members", uniqueConstraints = @UniqueConstraint(columnNames = { "chatId", "uid" }), indexes = {
+@Table(name = "chat_members", uniqueConstraints = @UniqueConstraint(columnNames = { "chatId", "userId" }), indexes = {
         @Index(name = "chat_members_idx_chat", columnList = "chatId"),
         @Index(name = "chat_members_idx_uid", columnList = "userId")
 })

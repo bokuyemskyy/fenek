@@ -34,8 +34,14 @@ public class User {
     @Column(length = 100)
     private String displayName;
 
-    @Column(length = 512)
-    private String avatarUrl;
+    @Column(nullable = true)
+    private Integer avatarVersion;
+
+    @Column(length = 7)
+    private String color;
+
+    @Column(nullable = false)
+    private boolean isComplete;
 
     @Column(nullable = false, updatable = false)
     @Enumerated(EnumType.STRING)
@@ -55,6 +61,8 @@ public class User {
         Instant now = Instant.now();
         this.createdAt = now;
         this.lastLoginAt = now;
+        this.color = "#f97316";
+        this.isComplete = false;
     }
 
     @PreUpdate

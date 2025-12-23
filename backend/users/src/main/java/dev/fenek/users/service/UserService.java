@@ -1,0 +1,95 @@
+package dev.fenek.users.service;
+
+import dev.fenek.users.model.User.Provider;
+import dev.fenek.users.dto.OAuth2UserInfo;
+import dev.fenek.users.model.User;
+import dev.fenek.users.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+@Service
+@RequiredArgsConstructor
+public class UserService {
+
+    private final UserRepository userRepository;
+    private final UserEventPublisherService publisher;
+    private final FileStorageService fileStorageService;
+
+    @Transactional
+    public User findOrCreateUser(
+            Provider provider,
+            OAuth2UserInfo userInfo) {
+
+        return userRepository
+                .findByProviderAndProviderId(provider, userInfo.providerId())
+                .map(existing -> {
+                    return updateFromOAuth2(existing, userInfo);
+                })
+                .orElseGet(() -> {
+                    User created = createFromOAuth2(provider, userInfo);
+                    publisher.publishUserCreated(created);
+                    return created;
+                });
+    }
+
+    private User createFromOAuth2(
+            Provider provider,
+            OAuth2UserInfo info) {
+        return userRepository.save(
+                User.builder()
+                        .provider(provider)
+                        .providerId(info.providerId())
+                        .email(info.email())
+                        .displayName(info.name())
+                        .build());
+    }
+
+    private User updateFromOAuth2(
+            User user,
+            OAuth2UserInfo info) {
+        user.setEmail(info.email());
+        return user;
+    }
+
+    public void updateUser(UUID userId,
+            String username,
+            String displayName,
+            String color,
+            Boolean removeAvatar,
+            MultipartFile avatarFile) throws IOException {
+        if (Boolean.TRUE.equals(removeAvatar) && avatarFile != null) {
+            throw new IllegalArgumentException("Cannot remove and upload avatar at the same time");
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (username != null)
+            user.setUsername(username);
+        if (displayName != null)
+            user.setDisplayName(displayName);
+        if (color != null)
+            user.setColor(color);
+
+        if (Boolean.TRUE.equals(removeAvatar)) {
+            user.setAvatarVersion(null);
+        }
+        if (avatarFile != null) {
+            Integer avatarVersion = user.getAvatarVersion() != null ? user.getAvatarVersion() + 1 : 1;
+            fileStorageService.uploadAvatar(userId, avatarVersion, avatarFile.getBytes());
+            user.setAvatarVersion(avatarVersion);
+        }
+
+        user.setComplete(true);
+
+        userRepository.save(user);
+    }
+
+}

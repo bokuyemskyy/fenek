@@ -9,7 +9,7 @@ import java.util.UUID;
 @Getter
 @Setter
 @Entity
-@Table(indexes = {
+@Table(name = "refresh_tokens", indexes = {
         @Index(name = "idx_refresh_token_user", columnList = "userId"),
         @Index(name = "idx_refresh_token_expires", columnList = "expiresAt")
 })
