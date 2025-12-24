@@ -1,7 +1,10 @@
 package dev.fenek.users.service;
 
 import java.time.Duration;
+import java.time.Instant;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -28,10 +31,25 @@ public class FileStorageService {
         upload(avatarBucket, new AvatarObjectKey(userId, version).value(), data);
     }
 
+    private final Map<String, CachedUrl> cache = new ConcurrentHashMap<>();
+
     public String getAvatarUrl(UUID userId, Integer version) {
         if (version == null)
             return null;
-        return getPresignedUrl(avatarBucket, new AvatarObjectKey(userId, version).value(), Duration.ofMinutes(10));
+
+        String key = new AvatarObjectKey(userId, version).value();
+        CachedUrl cached = cache.get(key);
+
+        if (cached != null && cached.expiry.isAfter(Instant.now())) {
+            return cached.url;
+        }
+
+        String url = getPresignedUrl(avatarBucket, key, Duration.ofMinutes(10));
+        cache.put(key, new CachedUrl(url, Instant.now().plusSeconds(600)));
+        return url;
+    }
+
+    private record CachedUrl(String url, Instant expiry) {
     }
 
     private void upload(String bucket, String key, byte[] data) {

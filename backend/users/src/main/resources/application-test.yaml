@@ -27,6 +27,7 @@ spring:
             
 app:
   frontend-url: 123
+  service-token: ${SERVICE_TOKEN}
   jwt:
     secret-base-64: 9p619sjdCSPmvDw785S1K3keqaAybG1erKaU7XXV8ws=
     expiration-seconds: 3600

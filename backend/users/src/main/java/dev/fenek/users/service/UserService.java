@@ -2,12 +2,13 @@ package dev.fenek.users.service;
 
 import dev.fenek.users.model.User.Provider;
 import dev.fenek.users.dto.OAuth2UserInfo;
+import dev.fenek.users.dto.UserResponse;
 import dev.fenek.users.model.User;
 import dev.fenek.users.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 
 import java.io.IOException;
-import java.nio.file.Paths;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -21,6 +22,20 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserEventPublisherService publisher;
     private final FileStorageService fileStorageService;
+
+    public List<UserResponse> searchUsersByUsername(UUID requesterId, String query) {
+        return userRepository
+                .findByUsernameContainingIgnoreCase(query)
+                .stream()
+                .filter(user -> !user.getId().equals(requesterId))
+                .map(user -> new UserResponse(
+                        user.getId(),
+                        user.getUsername(),
+                        user.getDisplayName(),
+                        user.getColor(),
+                        fileStorageService.getAvatarUrl(user.getId(), user.getAvatarVersion())))
+                .toList();
+    }
 
     @Transactional
     public User findOrCreateUser(
@@ -56,6 +71,19 @@ public class UserService {
             OAuth2UserInfo info) {
         user.setEmail(info.email());
         return user;
+    }
+
+    public List<UserResponse> getUsersByIds(UUID requesterId, List<UUID> userIds) {
+        List<User> users = userRepository.findAllById(userIds);
+
+        return users.stream()
+                .map(user -> new UserResponse(
+                        user.getId(),
+                        user.getUsername(),
+                        user.getDisplayName(),
+                        user.getColor(),
+                        fileStorageService.getAvatarUrl(user.getId(), user.getAvatarVersion())))
+                .toList();
     }
 
     public void updateUser(UUID userId,

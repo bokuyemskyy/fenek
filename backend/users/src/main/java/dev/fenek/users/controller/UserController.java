@@ -1,12 +1,17 @@
 package dev.fenek.users.controller;
 
+import java.util.List;
+
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import dev.fenek.users.dto.UserBatchRequest;
+import dev.fenek.users.dto.UserBatchResponse;
 import dev.fenek.users.dto.UserMeResponse;
+import dev.fenek.users.dto.UserResponse;
 import dev.fenek.users.model.User;
 import dev.fenek.users.service.FileStorageService;
 import dev.fenek.users.service.UserService;
@@ -19,6 +24,12 @@ public class UserController {
     private final UserService userService;
     private final FileStorageService fileStorageService;
 
+    @GetMapping("/search")
+    public List<UserResponse> searchUsers(@RequestParam("q") String query,
+            @AuthenticationPrincipal User user) {
+        return userService.searchUsersByUsername(user.getId(), query);
+    }
+
     @GetMapping("/me")
     public UserMeResponse getCurrentUser(@AuthenticationPrincipal User user) {
         return new UserMeResponse(
@@ -29,6 +40,12 @@ public class UserController {
                 fileStorageService.getAvatarUrl(user.getId(), user.getAvatarVersion()),
                 user.getColor(),
                 user.isComplete());
+    }
+
+    @PostMapping("/batch")
+    public UserBatchResponse getUsersBatch(@RequestBody UserBatchRequest request) {
+        List<UserResponse> users = userService.getUsersByIds(request.getRequesterId(), request.getUserIds());
+        return new UserBatchResponse(users);
     }
 
     @PatchMapping(value = "/me", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

@@ -1,8 +1,11 @@
 package dev.fenek.chats.auth;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -32,8 +35,12 @@ public class JwtUidFilter extends OncePerRequestFilter {
 
         if (token != null) {
             UUID uid = jwtService.validateAndGetUserId(token).orElse(null);
-            if (uid != null)
-                request.setAttribute("uid", uid);
+            if (uid != null) {
+                JwtUserPrincipal principal = new JwtUserPrincipal(uid);
+                UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(principal, null,
+                        List.of());
+                SecurityContextHolder.getContext().setAuthentication(auth);
+            }
         }
 
         filterChain.doFilter(request, response);

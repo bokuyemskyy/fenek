@@ -32,5 +32,7 @@ spring:
     show-sql: true
 
 app:
+  service-token: ${SERVICE_TOKEN}
+  users-service-url: ${USERS_SERVICE_URL}
   jwt: 
     secret-base-64: ${JWT_SECRET_BASE_64}
