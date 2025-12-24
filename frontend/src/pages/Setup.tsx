@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import Fenek from "../assets/fenek.svg";
 import { useAuth } from "../auth/AuthContext";
+import Avatar from "../components/Avatar";
 
 export default function Setup() {
     const { user } = useAuth();
@@ -73,12 +74,6 @@ export default function Setup() {
         setAvatarFile(null);
         setAvatarPreview(null);
     }
-    const getInitials = () => {
-        if (!displayName.trim()) return "?";
-        const names = displayName.trim().split(" ");
-        if (names.length === 1) return names[0].substring(0, 2).toUpperCase();
-        return (names[0][0] + names[names.length - 1][0]).toUpperCase();
-    };
 
     return (
         <div className="min-h-screen bg-black text-white">
@@ -121,22 +116,10 @@ export default function Setup() {
                                     </td>
                                     <td rowSpan={2} className="w-px whitespace-nowrap pl-8 align-middle">
                                         <div className="relative group">
-                                            <div
-                                                className="h-48 aspect-square rounded-full flex items-center justify-center text-6xl font-medium cursor-pointer overflow-hidden relative transition-colors duration-300"
-                                                style={{ backgroundColor: avatarPreview ? "#00000000" : avatarColor }}
-                                                onClick={() => document.getElementById("avatarInput")?.click()}
-                                            >
-                                                {avatarPreview ? (
-                                                    <img
-                                                        src={avatarPreview}
-                                                        alt="avatar preview"
-                                                        className="w-full h-full object-cover rounded-full"
-                                                    />
-                                                ) : (
-                                                    <span className="relative z-10">{getInitials()}</span>
-                                                )}
-
-                                                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center z-20 gap-2">
+                                            <div className="h-48 aspect-square">
+                                                <Avatar avatarUrl={avatarPreview} color={avatarColor} displayName={displayName} />
+                                                <div className="absolute rounded-full inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center z-20 gap-2 cursor-pointer"
+                                                    onClick={() => document.getElementById("avatarInput")?.click()}>
                                                     <span className="text-sm text-white">click to upload</span>
                                                     {avatarPreview && (
                                                         <button

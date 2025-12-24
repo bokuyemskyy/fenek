@@ -15,7 +15,7 @@ export default function App() {
           <Route path="/" element={<ProtectedRoute access={RouteAccess.Public}><Landing /></ProtectedRoute>} />
           <Route path="/login" element={<ProtectedRoute access={RouteAccess.GuestOnly}><Login /></ProtectedRoute>} />
           <Route path="/chats" element={<ProtectedRoute access={RouteAccess.CompleteProfile}><Chats /></ProtectedRoute>} />
-          <Route path="/setup" element={<ProtectedRoute access={RouteAccess.AuthOnly}><Setup /></ProtectedRoute>} />
+          <Route path="/setup" element={<ProtectedRoute access={RouteAccess.IncompleteProfile}><Setup /></ProtectedRoute>} />
         </Routes>
       </Router>
     </AuthProvider>

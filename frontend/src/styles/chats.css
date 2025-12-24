@@ -1,0 +1,22 @@
+
+.scrollbar-hidden::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-hidden::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 3px;
+}
+
+.scrollbar-hidden:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.scrollbar-hidden {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+.scrollbar-hidden:hover {
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}

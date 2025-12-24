@@ -12,6 +12,7 @@ export default function ProtectedRoute({
 }) {
     const { user, isAuthenticated, loading } = useAuth();
 
+    console.log(user, isAuthenticated);
     if (loading) return <div>Loading...</div>;
 
     if (access === RouteAccess.Public) return children;
