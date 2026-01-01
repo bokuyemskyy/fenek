@@ -12,9 +12,9 @@ spring:
     addresses: ${RABBITMQ_URL}
 
   minio:
-    endpoint: ${MINIO_URL}
-    access-key: ${MINIO_USER}
-    secret-key: ${MINIO_PASSWORD}
+    endpoint: 123
+    access-key: 123
+    secret-key: 123 
     avatar-bucket: avatars
    
   jpa:
@@ -27,7 +27,7 @@ spring:
             
 app:
   frontend-url: 123
-  service-token: ${SERVICE_TOKEN}
+  service-token: 123
   jwt:
     secret-base-64: 9p619sjdCSPmvDw785S1K3keqaAybG1erKaU7XXV8ws=
     expiration-seconds: 3600

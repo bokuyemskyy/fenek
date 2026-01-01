@@ -11,6 +11,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserBatchRequest {
-    private UUID requesterId;
     private List<UUID> userIds;
 }

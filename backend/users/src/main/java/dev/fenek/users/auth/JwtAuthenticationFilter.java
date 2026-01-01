@@ -23,12 +23,13 @@ import lombok.RequiredArgsConstructor;
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    @Value("${app.service-token}")
-    private String serviceToken;
 
     private final JwtService jwtService;
     private final TokenCookieService tokenCookieService;
     private final UserRepository userRepository;
+
+    @Value("${app.service-token}")
+    private String serviceToken;
 
     @Override
     protected void doFilterInternal(
@@ -47,20 +48,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String token = tokenCookieService.getAccessToken(request).orElse(null);
         if (token != null) {
-            UUID uid = jwtService.validateAndGetUserId(token).orElse(null);
-            if (uid != null) {
-                User user = userRepository.findById(uid)
-                        .orElseThrow();
-
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        user,
-                        null,
-                        List.of());
-
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-            }
+            jwtService.validateAndGetUserId(token).ifPresent(uid -> {
+                User user = userRepository.findById(uid).orElseThrow();
+                SecurityContextHolder.getContext().setAuthentication(
+                        new UsernamePasswordAuthenticationToken(user, null, List.of()));
+            });
         }
         filterChain.doFilter(request, response);
     }
-
 }

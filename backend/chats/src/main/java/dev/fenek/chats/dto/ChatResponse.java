@@ -18,6 +18,8 @@ public class ChatResponse {
     private String title;
     private String description;
     private String lastMessage;
+    private Instant timestamp;
     private Type type;
     private Instant createdAt;
+    private String avatarUrl;
 }

@@ -36,7 +36,7 @@ export default function Setup() {
         formData.append("username", username);
         formData.append("displayName", displayName);
         formData.append("color", avatarColor);
-        if (avatarFile) formData.append("avatar", avatarFile);
+        if (avatarFile) formData.append("avatarFile", avatarFile);
 
         try {
             const response = await fetch("/api/users/me", {

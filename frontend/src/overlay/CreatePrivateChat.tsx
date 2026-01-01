@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Search, X, Loader2, User, Check } from "lucide-react";
-import type { CommonPopupProps } from "./Overlay";
+import type { CommonPopupProps } from "../types/overlay";
 import Avatar from "../components/Avatar";
 
 interface UserResult {
@@ -30,7 +30,12 @@ export default function CreatePrivateChat({ onClose }: CommonPopupProps) {
 
             setIsSearching(true);
             try {
-                const res = await fetch(`/api/users/search?q=${encodeURIComponent(query)}`, { method: "GET", credentials: "include", signal: controller.signal });
+                const res = await fetch(`/api/users/search?q=${encodeURIComponent(query)}`,
+                    {
+                        method: "GET",
+                        credentials: "include",
+                        signal: controller.signal
+                    });
 
                 if (!res.ok) {
                     throw new Error
@@ -59,11 +64,16 @@ export default function CreatePrivateChat({ onClose }: CommonPopupProps) {
         setIsCreating(true);
 
         try {
-            // REPLACE with your actual API call
-            // await fetch('/api/chats', { method: 'POST', body: JSON.stringify({ userId: selectedUser.id }) })
-            console.log("Creating chat with:", selectedUser.id);
+            const res = await fetch(`/api/chats/private`,
+                {
+                    method: "POST",
+                    credentials: "include",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ otherUserId: selectedUser.id })
+                });
 
-            // On success, close modal or navigate
             onClose();
         } catch (error) {
             console.error("Failed to create chat", error);
@@ -73,10 +83,8 @@ export default function CreatePrivateChat({ onClose }: CommonPopupProps) {
     };
 
     return (
-        // Modal Container (matches your Login card style)
-        <div className="w-full max-w-md bg-[#0c0c0c] border border-white/10 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh] pointer-events-auto">
+        <div className="w-md bg-[#0c0c0c] border border-white/10 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh] pointer-events-auto">
 
-            {/* Header */}
             <div className="p-6 border-b border-white/5 flex items-center justify-between">
                 <h2 className="text-xl font-medium text-white">New Chat</h2>
                 <button
@@ -87,7 +95,6 @@ export default function CreatePrivateChat({ onClose }: CommonPopupProps) {
                 </button>
             </div>
 
-            {/* Search Input Area */}
             <div className="px-6 py-4">
                 <div className="relative group">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -106,7 +113,6 @@ export default function CreatePrivateChat({ onClose }: CommonPopupProps) {
                 </div>
             </div>
 
-            {/* Results List (Scrollable) */}
             <div className="flex-1 overflow-y-auto px-4 pb-4 min-h-[300px]">
                 {isSearching ? (
                     <div className="flex flex-col items-center justify-center h-full text-white/40 gap-2">
@@ -127,9 +133,10 @@ export default function CreatePrivateChat({ onClose }: CommonPopupProps) {
                                             : "bg-transparent border-transparent hover:bg-white/5 hover:border-white/5"
                                         }`}
                                 >
-                                    {/* Avatar */}
                                     <div className="relative shrink-0">
-                                        <Avatar avatarUrl={user.avatarUrl} displayName={user.displayName} color={user.color}></Avatar>
+                                        <div className="w-12 h-12 rounded-full">
+                                            <Avatar avatarUrl={user.avatarUrl} displayName={user.displayName} color={user.color} />
+                                        </div>
                                         {isSelected && (
                                             <div className="absolute -bottom-1 -right-1 bg-orange-500 rounded-full p-0.5 border-2 border-black">
                                                 <Check className="w-3 h-3 text-white" />
@@ -137,7 +144,6 @@ export default function CreatePrivateChat({ onClose }: CommonPopupProps) {
                                         )}
                                     </div>
 
-                                    {/* Text Info */}
                                     <div className="flex-1 text-left overflow-hidden">
                                         <div className={`text-base font-medium truncate ${isSelected ? "text-orange-500" : "text-white"}`}>
                                             {user.displayName}
@@ -151,7 +157,6 @@ export default function CreatePrivateChat({ onClose }: CommonPopupProps) {
                         })}
                     </div>
                 ) : (
-                    // Empty State
                     <div className="flex flex-col items-center justify-center h-full text-white/20 gap-3">
                         {query ? (
                             <>
@@ -173,7 +178,7 @@ export default function CreatePrivateChat({ onClose }: CommonPopupProps) {
                 <button
                     disabled={!selectedUser || isCreating}
                     onClick={handleCreateChat}
-                    className="w-full py-4 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 
+                    className="px-6 py-3 mx-auto rounded-full bg-gradient-to-r from-orange-500 to-orange-600 
                                text-white font-medium shadow-lg shadow-orange-500/20 
                                disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none
                                hover:shadow-orange-500/30 hover:from-orange-600 hover:to-orange-700 

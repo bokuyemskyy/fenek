@@ -30,7 +30,7 @@ public class UsersServiceClient {
     private String userServiceUrl;
 
     public List<UserResponse> getUsersBatch(UUID requesterId, List<UUID> userIds) {
-        String url = userServiceUrl + "/api/users/batch";
+        String url = userServiceUrl + "/users/batch";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);

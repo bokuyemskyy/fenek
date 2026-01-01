@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -48,6 +50,14 @@ public class UserService {
                     return updateFromOAuth2(existing, userInfo);
                 })
                 .orElseGet(() -> {
+                    userRepository.findByEmail(userInfo.email())
+                            .ifPresent(existing -> {
+                                if (!existing.getProvider().equals(provider)) {
+                                    throw new OAuth2AuthenticationException(
+                                            new OAuth2Error("email_exists"),
+                                            "Email already registered with another provider");
+                                }
+                            });
                     User created = createFromOAuth2(provider, userInfo);
                     publisher.publishUserCreated(created);
                     return created;
@@ -69,6 +79,15 @@ public class UserService {
     private User updateFromOAuth2(
             User user,
             OAuth2UserInfo info) {
+        if (!user.getEmail().equals(info.email())) {
+            userRepository.findByEmail(info.email())
+                    .ifPresent(existing -> {
+                        throw new OAuth2AuthenticationException(
+                                new OAuth2Error("email_exists"),
+                                "Email already registered with another provider");
+                    });
+        }
+
         user.setEmail(info.email());
         return user;
     }

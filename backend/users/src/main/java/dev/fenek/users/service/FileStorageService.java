@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.endpoints.internal.Value.Str;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
@@ -23,6 +24,12 @@ public class FileStorageService {
 
     private final S3Client s3Client;
     private final S3Presigner s3Presigner;
+
+    @Value("${spring.minio.endpoint}")
+    private String minioUrl;
+
+    @Value("${app.frontend-url}")
+    private String frontendUrl;
 
     @Value("${spring.minio.avatar-bucket}")
     private String avatarBucket;
@@ -72,7 +79,9 @@ public class FileStorageService {
                 .getObjectRequest(getObjectRequest)
                 .build();
 
-        return s3Presigner.presignGetObject(presignRequest).url().toString();
+        String internalUrl = s3Presigner.presignGetObject(presignRequest).url().toString();
+
+        return internalUrl.replace(minioUrl, frontendUrl);
     }
 
     public record AvatarObjectKey(UUID userId, int version) {

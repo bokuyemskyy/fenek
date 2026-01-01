@@ -9,6 +9,6 @@ import lombok.AllArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PrivateChatCreateRequest {
+public class CreatePrivateChatRequest {
     private UUID otherUserId;
 }

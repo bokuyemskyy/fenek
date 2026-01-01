@@ -1,4 +1,4 @@
-import type { NewChatProps } from "./Overlay";
+import type { NewChatProps } from "../types/overlay";
 import { User, Users } from "lucide-react";
 
 export default function NewChat({ anchorRect, onClose, onAction }: NewChatProps) {

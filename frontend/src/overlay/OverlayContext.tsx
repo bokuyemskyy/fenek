@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { OverlayState, OverlayType } from "./Overlay";
+import type { OverlayState, OverlayType } from "../types/overlay";
 
 export function useOverlay() {
     const [overlay, setOverlay] = useState<OverlayState>(null);

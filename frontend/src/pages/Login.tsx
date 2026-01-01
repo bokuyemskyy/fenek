@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { siGithub, siGoogle } from 'simple-icons';
 import Fenek from "../assets/fenek.svg";
 
@@ -28,6 +28,20 @@ function GithubIcon() {
 }
 
 export default function Login() {
+    const location = useLocation();
+    const queryParams = new URLSearchParams(location.search);
+    const hasError = queryParams.has("error");
+    const error = queryParams.get("error");
+
+    const getErrorMessage = (error: string | null) => {
+        switch (error) {
+            case "email_exists":
+                return "This email is already registered with another provider. Please use the original sign-in method.";
+            default:
+                return "Login failed. Please try again.";
+        }
+    };
+
     return (
         <div className="min-h-screen bg-black text-white flex items-center justify-center px-6">
             <div className="w-full max-w-md">
@@ -39,6 +53,12 @@ export default function Login() {
                     <h1 className="text-3xl font-medium mb-2">Welcome back</h1>
                     <p className="text-white/60">Log in to continue to your account</p>
                 </div>
+
+                {hasError && (
+                    <div className="mb-6 px-4 py-3 rounded-xl bg-red-600/30 border border-red-600/80 text-white text-center">
+                        {getErrorMessage(error)}
+                    </div>
+                )}
 
                 <div className="p-8 rounded-3xl border border-white/10 bg-white/5 backdrop-blur-sm">
                     <div className="space-y-4">

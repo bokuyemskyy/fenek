@@ -2,6 +2,7 @@ package dev.fenek.users.config;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -10,15 +11,14 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import dev.fenek.users.auth.JwtAuthenticationFilter;
+import dev.fenek.users.auth.OAuth2FailureHandler;
 import dev.fenek.users.auth.OAuth2SuccessHandler;
-import dev.fenek.users.repository.UserRepository;
-import dev.fenek.users.service.JwtService;
-import dev.fenek.users.service.TokenCookieService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
@@ -26,11 +26,9 @@ import lombok.RequiredArgsConstructor;
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-
+        private final JwtAuthenticationFilter jwtAuthenticationFilter;
         private final OAuth2SuccessHandler oAuth2SuccessHandler;
-        private final JwtService jwtService;
-        private final UserRepository userRepository;
-        private final TokenCookieService tokenCookieService;
+        private final OAuth2FailureHandler oAuth2FailureHandler;
 
         @Bean
         public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -39,20 +37,19 @@ public class SecurityConfig {
                                 .csrf(AbstractHttpConfigurer::disable)
                                 .formLogin(AbstractHttpConfigurer::disable)
                                 .httpBasic(AbstractHttpConfigurer::disable)
-                                .httpBasic(AbstractHttpConfigurer::disable)
                                 .sessionManagement(session -> session
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                                .addFilterBefore(
-                                                new JwtAuthenticationFilter(jwtService, tokenCookieService,
-                                                                userRepository),
-                                                org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
+                                .addFilterBefore(jwtAuthenticationFilter,
+                                                UsernamePasswordAuthenticationFilter.class)
                                 .authorizeHttpRequests(auth -> auth
                                                 .requestMatchers(
                                                                 "/oauth2/**",
-                                                                "/login/**")
+                                                                "/login/**",
+                                                                "/auth/refresh")
                                                 .permitAll()
                                                 .anyRequest().authenticated())
                                 .oauth2Login(oauth2 -> oauth2
+                                                .failureHandler(oAuth2FailureHandler)
                                                 .successHandler(oAuth2SuccessHandler))
                                 .exceptionHandling(exceptions -> exceptions
                                                 .authenticationEntryPoint((request, response, authException) -> {
@@ -76,4 +73,5 @@ public class SecurityConfig {
                 source.registerCorsConfiguration("/**", config);
                 return source;
         }
+
 }

@@ -44,8 +44,8 @@ app:
   service-token: ${SERVICE_TOKEN}
   jwt:
     secret-base-64: ${JWT_SECRET_BASE_64}
-    expiration-seconds: 3600
-    refresh-expiration-seconds: 604800
+    expiration-seconds: ${JWT_EXPIRATION_SECONDS}
+    refresh-expiration-seconds: ${JWT_REFRESH_EXPIRATION_SECONDS}
   cookie:
     secure: false
     same-site: Strict

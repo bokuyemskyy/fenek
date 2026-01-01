@@ -6,11 +6,14 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.Base64;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import dev.fenek.users.model.RefreshToken;
 import dev.fenek.users.model.User;
@@ -72,11 +75,17 @@ public class RefreshTokenService {
         }
     }
 
-    public boolean isTokenValid(String rawToken) {
+    public User validateAndGetUser(String rawToken) {
         String hashed = hashToken(rawToken);
-        return refreshTokenRepository.findByTokenHash(hashed)
-                .map(RefreshToken::isActive)
-                .orElse(false);
+
+        RefreshToken token = refreshTokenRepository.findByTokenHash(hashed)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid refresh token"));
+
+        if (!token.isActive()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Refresh token is expired or revoked");
+        }
+
+        return token.getUser();
     }
 
     @Transactional

@@ -1,3 +1,5 @@
+import { Bookmark, Menu } from "lucide-react";
+
 interface AvatarProps {
     avatarUrl?: string | null;
     displayName?: string;
@@ -28,20 +30,20 @@ export default function Avatar({
                     alt={displayName ? `${displayName}'s avatar` : "Avatar"}
                     className="w-full h-full object-cover"
                 />
-            ) : (
-                <svg viewBox="0 0 100 100" className="w-full h-full">
-                    <rect width="100" height="100" fill={bgColor} />
-                    <foreignObject width="100" height="100">
-                        <div className="w-full h-full flex items-center justify-center text-white">
-                            {icon ? (
-                                <div className="w-1/2 h-1/2">{icon}</div>
-                            ) : (
-                                <span className="text-3xl font-medium">{initials}</span>
-                            )}
-                        </div>
-                    </foreignObject>
-                </svg>
-            )}
+            ) :
+                <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: bgColor }} >
+                    {icon ? (<div className="flex items-center justify-center w-full h-full">{icon}</div>) :
+                        (
+                            <svg viewBox="0 0 100 100" className="w-full h-full">
+                                <foreignObject width="100" height="100">
+                                    <div className="w-full h-full flex items-center justify-center text-white">
+                                        <span className="text-3xl font-medium">{initials}</span>
+                                    </div>
+                                </foreignObject>
+                            </svg>
+                        )}
+                </div>
+            }
         </div>
-    );
+    )
 }

@@ -19,10 +19,11 @@ spring:
           max-attempts: 5
 
   minio:
-    endpoint: ${MINIO_URL}
-    access-key: ${MINIO_USER}
-    secret-key: ${MINIO_PASSWORD}
+    endpoint: 123
+    access-key: 123
+    secret-key: 123 
 
+  
   jpa:
     hibernate:
       ddl-auto: create-drop
@@ -36,3 +37,7 @@ app:
   users-service-url: ${USERS_SERVICE_URL}
   jwt: 
     secret-base-64: ${JWT_SECRET_BASE_64}
+
+
+server:
+  forward-headers-strategy: native

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import type { OverlayState, OverlayType } from "./Overlay";
+import type { OverlayState, OverlayType } from "../types/overlay";
 
 // Components
 import NewChat from "./NewChat";

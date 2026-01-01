@@ -16,6 +16,7 @@ type AuthContextType = {
     loading: boolean;
     logout: () => void;
     refreshUser: () => Promise<void>;
+    refreshToken: () => Promise<boolean>;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -40,6 +41,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
     }
 
+    async function refreshToken() {
+        try {
+            const res = await fetch("http://localhost:8080/api/auth/refresh", {
+                method: "POST",
+                credentials: "include",
+            });
+            if (!res.ok) throw new Error("Failed to refresh token");
+            await refreshUser();
+            return true;
+        } catch {
+            setUser(null);
+            return false;
+        }
+    }
+
     function logout() {
         fetch("http://localhost:8080/api/auth/logout", {
             method: "POST",
@@ -53,7 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return (
         <AuthContext.Provider
-            value={{ user, isAuthenticated, loading, logout, refreshUser }}
+            value={{ user, isAuthenticated, loading, logout, refreshUser, refreshToken }}
         >
             {children}
         </AuthContext.Provider>

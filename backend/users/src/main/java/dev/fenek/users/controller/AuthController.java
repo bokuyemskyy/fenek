@@ -1,7 +1,9 @@
 package dev.fenek.users.controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import dev.fenek.users.service.TokenCookieService;
 import dev.fenek.users.model.User;
@@ -27,16 +29,22 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public void refresh(Authentication authentication, HttpServletRequest request, HttpServletResponse response) {
-        User user = (User) authentication.getPrincipal();
+    public void refresh(@CookieValue(value = "refreshToken", required = false) String refreshToken,
+            HttpServletResponse response) {
+
+        if (refreshToken == null || refreshToken.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Refresh token is missing");
+        }
+
+        User user = refreshTokenService.validateAndGetUser(refreshToken);
 
         tokenCookieService.clearTokens(response);
 
-        String accessToken = jwtService.createToken(user);
-        String refreshToken = refreshTokenService.createToken(user);
+        String newAccessToken = jwtService.createToken(user);
+        String newRefreshToken = refreshTokenService.createToken(user);
 
-        tokenCookieService.addAccessToken(response, accessToken);
-        tokenCookieService.addRefreshToken(response, refreshToken);
+        tokenCookieService.addAccessToken(response, newAccessToken);
+        tokenCookieService.addRefreshToken(response, newRefreshToken);
     }
 
 }

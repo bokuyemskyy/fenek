@@ -16,37 +16,40 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 @Configuration
 public class S3Config {
 
-    @Value("${spring.minio.endpoint}")
-    private String endpoint;
+        @Value("${spring.minio.endpoint}")
+        private String endpoint;
 
-    @Value("${spring.minio.access-key}")
-    private String accessKey;
+        @Value("${spring.minio.access-key}")
+        private String accessKey;
 
-    @Value("${spring.minio.secret-key}")
-    private String secretKey;
+        @Value("${spring.minio.secret-key}")
+        private String secretKey;
 
-    @Bean
-    public S3Client s3Client() {
-        return S3Client.builder()
-                .endpointOverride(URI.create(endpoint))
-                .credentialsProvider(
-                        StaticCredentialsProvider.create(
-                                AwsBasicCredentials.create(accessKey, secretKey)))
-                .region(Region.EU_CENTRAL_1)
-                .serviceConfiguration(
-                        S3Configuration.builder()
-                                .pathStyleAccessEnabled(true)
-                                .build())
-                .build();
-    }
+        @Bean
+        public S3Client s3Client() {
+                return S3Client.builder()
+                                .endpointOverride(URI.create(endpoint))
+                                .credentialsProvider(
+                                                StaticCredentialsProvider.create(
+                                                                AwsBasicCredentials.create(accessKey, secretKey)))
+                                .region(Region.EU_CENTRAL_1)
+                                .serviceConfiguration(
+                                                S3Configuration.builder()
+                                                                .pathStyleAccessEnabled(true)
+                                                                .build())
+                                .build();
+        }
 
-    @Bean
-    public S3Presigner s3Presigner(S3Client s3Client) {
-        return S3Presigner.builder()
-                .endpointOverride(URI.create(endpoint))
-                .credentialsProvider(StaticCredentialsProvider.create(
-                        AwsBasicCredentials.create(accessKey, secretKey)))
-                .region(Region.EU_CENTRAL_1)
-                .build();
-    }
+        @Bean
+        public S3Presigner s3Presigner(S3Client s3Client) {
+                return S3Presigner.builder()
+                                .endpointOverride(URI.create(endpoint))
+                                .credentialsProvider(StaticCredentialsProvider.create(
+                                                AwsBasicCredentials.create(accessKey, secretKey)))
+                                .region(Region.EU_CENTRAL_1)
+                                .serviceConfiguration(S3Configuration.builder()
+                                                .pathStyleAccessEnabled(true)
+                                                .build())
+                                .build();
+        }
 }

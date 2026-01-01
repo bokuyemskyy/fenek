@@ -1,89 +1,91 @@
-import { useState } from "react";
-import { Menu, Search, Settings, PenSquare } from "lucide-react";
-import { ChatItem } from "../components/Chat"
+import { useState, useEffect } from "react";
+import { Menu, Search, Settings, PenSquare, Loader2 } from "lucide-react";
+import { ChatItem } from "../components/Chat";
 import Fenek from "../assets/fenek.svg";
 import "../styles/chats.css";
-import type { Overlay } from "../overlay/Overlay";
 import OverlayRoot from "../overlay/OverlayRoot";
 import { useOverlay } from "../overlay/OverlayContext";
+import type { Chat } from "../types/chat";
 
-const mockChats = [
-    {
-        id: 1,
-        name: "Alice Johnson",
-        avatar: "AJ",
-        lastMessage: "Hey! Are we still meeting tomorrow?",
-        unread: true,
-        timestamp: "2m ago"
-    },
-    {
-        id: 2,
-        name: "Design Team",
-        avatar: "DT",
-        lastMessage: "Sarah shared a new mockup",
-        unread: true,
-        timestamp: "15m ago"
-    },
-    {
-        id: 3,
-        name: "Bob Smith",
-        avatar: "BS",
-        lastMessage: "Thanks for the help!",
-        unread: false,
-        timestamp: "1h ago"
-    },
-    {
-        id: 4,
-        name: "Project Alpha",
-        avatar: "PA",
-        lastMessage: "Meeting notes uploaded",
-        unread: false,
-        timestamp: "3h ago"
-    },
-    {
-        id: 5,
-        name: "Emma Wilson",
-        avatar: "EW",
-        lastMessage: "Can you review the document?",
-        unread: true,
-        timestamp: "5h ago"
-    },
-    {
-        id: 6,
-        name: "Marketing Team",
-        avatar: "MT",
-        lastMessage: "Campaign launch scheduled",
-        unread: false,
-        timestamp: "Yesterday"
-    },
-    {
-        id: 7,
-        name: "David Lee",
-        avatar: "DL",
-        lastMessage: "Perfect, see you then!",
-        unread: false,
-        timestamp: "Yesterday"
-    },
-    {
-        id: 8,
-        name: "Coffee Chat ☕",
-        avatar: "CC",
-        lastMessage: "Who's in for 3pm?",
-        unread: false,
-        timestamp: "2d ago"
-    }
-];
+const getInitials = (name: string) => {
+    if (!name) return "";
+    return name
+        .split(" ")
+        .map((n) => n[0])
+        .slice(0, 2)
+        .join("")
+        .toUpperCase();
+};
+
+const formatTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (seconds < 60) return "Just now";
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    if (days < 7) return `${days}d ago`;
+
+    return date.toLocaleDateString();
+};
+
+
+
 export default function Chats() {
-    const [activeChat, setActiveChat] = useState(1);
+    const [chats, setChats] = useState<Chat[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    const [activeChat, setActiveChat] = useState<string | number | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
     const { overlay, close, switchOverlay, openNewChat } = useOverlay();
 
+    useEffect(() => {
+        const fetchChats = async () => {
+            try {
+                const response = await fetch(`/api/chats/`, {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    credentials: "include",
+                });
 
-    const filteredChats = mockChats.filter(chat =>
-        chat.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        chat.lastMessage.toLowerCase().includes(searchQuery.toLowerCase())
+                if (response.ok) {
+                    const data = await response.json();
+                    const formattedChats = data.map((chat: Chat) => ({
+                        id: chat.id,
+                        title: chat.title,
+                        description: chat.description,
+                        lastMessage: chat.lastMessage || "No messages yet",
+                        timestamp: chat.timestamp,
+                        avatarUrl: chat.avatarUrl,
+                        type: chat.type,
+                        createdat: chat.createdAt
+                    }));
+
+                    setChats(formattedChats);
+                } else {
+                    console.error("Failed to fetch chats");
+                }
+            } catch (error) {
+                console.error("Error fetching chats:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchChats();
+    }, []);
+
+    const filteredChats = chats.filter(chat =>
+        chat.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        chat.lastMessage?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     return (
@@ -124,14 +126,20 @@ export default function Chats() {
                 </div>
 
                 <div className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hidden">
-                    {filteredChats.map(chat => (
-                        <ChatItem
-                            key={chat.id}
-                            chat={chat}
-                            isActive={activeChat === chat.id}
-                            onClick={() => setActiveChat(chat.id)}
-                        />
-                    ))}
+                    {isLoading ? (
+                        <div className="flex items-center justify-center h-40 text-white/40">
+                            <Loader2 className="w-6 h-6 animate-spin" />
+                        </div>
+                    ) : (
+                        filteredChats.map(chat => (
+                            <ChatItem
+                                key={chat.id}
+                                chat={chat}
+                                isActive={activeChat === chat.id}
+                                onClick={() => setActiveChat(chat.id)}
+                            />
+                        ))
+                    )}
                 </div>
 
                 {!isSidebarCollapsed && (<div className="p-4 border-t border-white/10 bg-black/50 backdrop-blur-xl flex-shrink-0">
@@ -157,7 +165,7 @@ export default function Chats() {
             <OverlayRoot
                 overlay={overlay}
                 onClose={close}
-                onAction={switchOverlay} // <--- This enables the redirect
+                onAction={switchOverlay}
             />
         </div>
     );
