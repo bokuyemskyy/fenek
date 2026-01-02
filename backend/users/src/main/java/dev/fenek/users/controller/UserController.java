@@ -43,8 +43,8 @@ public class UserController {
     }
 
     @PostMapping("/batch")
-    public UserBatchResponse getUsersBatch(@RequestBody UserBatchRequest request) {
-        List<UserResponse> users = userService.getUsersByIds(request.getRequesterId(), request.getUserIds());
+    public UserBatchResponse getUsersBatch(@AuthenticationPrincipal User user, @RequestBody UserBatchRequest request) {
+        List<UserResponse> users = userService.getUsersByIds(user.getId(), request.getUserIds());
         return new UserBatchResponse(users);
     }
 

@@ -28,23 +28,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final TokenCookieService tokenCookieService;
     private final UserRepository userRepository;
 
-    @Value("${app.service-token}")
-    private String serviceToken;
-
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
             HttpServletResponse response,
             FilterChain filterChain)
             throws ServletException, IOException {
-        String serviceAuth = request.getHeader("X-Service-Token");
-        if (serviceAuth != null && serviceAuth.equals(serviceToken)) {
-            SecurityContextHolder.getContext().setAuthentication(
-                    new UsernamePasswordAuthenticationToken(
-                            "SERVICE", null, List.of()));
-            filterChain.doFilter(request, response);
-            return;
-        }
 
         String token = tokenCookieService.getAccessToken(request).orElse(null);
         if (token != null) {

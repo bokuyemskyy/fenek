@@ -11,15 +11,17 @@ import java.util.UUID;
 
 @Repository
 public interface ChatMemberRepository extends JpaRepository<ChatMember, UUID> {
-        List<ChatMember> findByUserId(UUID userId);
+  List<ChatMember> findByUserId(UUID userId);
 
-        @Query("""
-                            SELECT cm
-                            FROM ChatMember cm
-                            WHERE cm.chat.id IN :chatIds
-                              AND cm.userId <> :userId
-                        """)
-        List<ChatMember> findOtherMembers(
-                        @Param("chatIds") List<UUID> chatIds,
-                        @Param("userId") UUID userId);
+  @Query("""
+          SELECT cm
+          FROM ChatMember cm
+          WHERE cm.chat.id IN :chatIds
+            AND cm.userId <> :userId
+      """)
+  List<ChatMember> findOtherMembers(
+      @Param("chatIds") List<UUID> chatIds,
+      @Param("userId") UUID userId);
+
+  boolean existsByChatIdAndUserId(UUID chatId, UUID userId);
 }

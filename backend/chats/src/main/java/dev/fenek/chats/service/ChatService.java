@@ -1,18 +1,15 @@
 package dev.fenek.chats.service;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import dev.fenek.chats.model.Chat;
 import dev.fenek.chats.model.ChatMember;
@@ -22,7 +19,6 @@ import dev.fenek.chats.repository.ChatRepository;
 import dev.fenek.chats.repository.MessageRepository;
 import lombok.RequiredArgsConstructor;
 import dev.fenek.chats.dto.ChatResponse;
-import dev.fenek.chats.dto.UserResponse;
 import dev.fenek.chats.exception.CannotChatWithYourselfException;
 import dev.fenek.chats.exception.PrivateChatAlreadyExistsException;
 import dev.fenek.chats.exception.SavedChatAlreadyExistsException;
@@ -30,13 +26,20 @@ import dev.fenek.chats.exception.SavedChatAlreadyExistsException;
 @Service
 @RequiredArgsConstructor
 public class ChatService {
-        @Value("${service-token}")
-        private String serviceToken;
 
         private final ChatRepository chatRepository;
         private final ChatMemberRepository chatMemberRepository;
         private final MessageRepository messageRepository;
-        private final UsersServiceClient usersServiceClient;
+
+        public List<UUID> getOtherMemberIds(UUID userId, UUID chatId) {
+                return chatMemberRepository.findOtherMembers(List.of(chatId), userId).stream()
+                                .map(member -> member.getId())
+                                .toList();
+        }
+
+        public boolean isMember(UUID userId, UUID chatId) {
+                return chatMemberRepository.existsByChatIdAndUserId(chatId, userId);
+        }
 
         public ChatResponse createSavedChat(UUID userId) {
                 if (chatRepository.existsByOwnerIdAndType(userId, Chat.Type.SAVED)) {
@@ -133,33 +136,45 @@ public class ChatService {
                                                 cm -> cm.getChat().getId(),
                                                 ChatMember::getUserId));
 
-                Map<UUID, UserResponse> userIdToUser = usersServiceClient.getUsersBatch(userId,
-                                new ArrayList<>(chatToOtherUserId.values())).stream().collect(Collectors.toMap(
-                                                UserResponse::getId,
-                                                Function.identity()));
-
-                return chatMembers.stream().map(cm -> {
-                        Chat chat = cm.getChat();
+                return chatMembers.stream().map(chatMember -> {
+                        Chat chat = chatMember.getChat();
                         Message lastMessage = lastMessageMap.get(chat.getId());
 
-                        String title;
-                        String description;
-                        String avatarUrl = null;
+                        String lastMessageSnippet = null;
+                        Instant lastMessageTimestamp = null;
+
+                        if (lastMessage != null) {
+                                String content = lastMessage.getContent();
+                                lastMessageTimestamp = lastMessage.getCreatedAt();
+                                if (content != null) {
+                                        lastMessageSnippet = content.length() > 50
+                                                        ? content.substring(0, 50)
+                                                        : content;
+                                }
+                        }
+
+                        String title = null;
+                        String description = null;
+                        String imageUrl = null;
 
                         switch (chat.getType()) {
+
+                                case PRIVATE -> {
+                                        UUID otherUserId = chatToOtherUserId.get(chat.getId());
+
+                                        return ChatResponse.builder()
+                                                        .id(chat.getId())
+                                                        .type(chat.getType())
+                                                        .otherUserId(otherUserId)
+                                                        .lastMessageSnippet(lastMessageSnippet)
+                                                        .lastMessageTimestamp(lastMessageTimestamp)
+                                                        .createdAt(chat.getCreatedAt())
+                                                        .build();
+                                }
 
                                 case SAVED -> {
                                         title = "Saved messages";
                                         description = "You can send what you want to save here";
-                                }
-
-                                case PRIVATE -> {
-                                        UUID otherUserId = chatToOtherUserId.get(chat.getId());
-                                        String name = userIdToUser.get(otherUserId).getDisplayName();
-
-                                        title = name;
-                                        description = "Your private chat with " + name;
-                                        avatarUrl = userIdToUser.get(otherUserId).getAvatarUrl();
                                 }
 
                                 case GROUP, CHANNEL -> {
@@ -172,13 +187,12 @@ public class ChatService {
 
                         return ChatResponse.builder()
                                         .id(chat.getId())
+                                        .type(chat.getType())
                                         .title(title)
                                         .description(description)
-                                        .avatarUrl(avatarUrl)
-                                        .timestamp(lastMessage != null ? lastMessage.getCreatedAt() : null)
-                                        .lastMessage(
-                                                        lastMessage != null ? lastMessage.getContent() : null)
-                                        .type(chat.getType())
+                                        .imageUrl(imageUrl)
+                                        .lastMessageSnippet(lastMessageSnippet)
+                                        .lastMessageTimestamp(lastMessageTimestamp)
                                         .createdAt(chat.getCreatedAt())
                                         .build();
                 }).toList();

@@ -1,11 +1,14 @@
 package dev.fenek.chats.auth;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.http.server.ServletServerHttpRequest;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.HandshakeInterceptor;
@@ -21,16 +24,28 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
     private final TokenCookieService tokenCookieService;
 
     @Override
-    public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler,
+    public boolean beforeHandshake(
+            ServerHttpRequest request,
+            ServerHttpResponse response,
+            WebSocketHandler wsHandler,
             Map<String, Object> attributes) {
         if (!(request instanceof ServletServerHttpRequest servletRequest)) {
             return false;
         }
 
-        String token = tokenCookieService.getAccessToken(servletRequest.getServletRequest()).orElse(null);
-        UUID uid = jwtService.validateAndGetUserId(token).orElse(null);
-        if (uid != null) {
-            attributes.put("uid", uid);
+        String token = tokenCookieService
+                .getAccessToken(servletRequest.getServletRequest())
+                .orElse(null);
+        UUID userId = jwtService.validateAndGetUserId(token).orElse(null);
+
+        if (userId != null) {
+            JwtUserPrincipal principal = new JwtUserPrincipal(userId);
+            WsAuthenticationToken authentication = new WsAuthenticationToken(principal, List.of());
+            SecurityContext context = SecurityContextHolder.createEmptyContext();
+            context.setAuthentication(authentication);
+
+            attributes.put("SPRING_SECURITY_CONTEXT", context);
+
             return true;
         }
 

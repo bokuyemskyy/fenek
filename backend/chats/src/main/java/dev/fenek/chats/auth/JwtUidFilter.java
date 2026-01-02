@@ -34,9 +34,9 @@ public class JwtUidFilter extends OncePerRequestFilter {
         String token = tokenCookieService.getAccessToken(request).orElse(null);
 
         if (token != null) {
-            UUID uid = jwtService.validateAndGetUserId(token).orElse(null);
-            if (uid != null) {
-                JwtUserPrincipal principal = new JwtUserPrincipal(uid);
+            UUID userId = jwtService.validateAndGetUserId(token).orElse(null);
+            if (userId != null) {
+                JwtUserPrincipal principal = new JwtUserPrincipal(userId);
                 UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(principal, null,
                         List.of());
                 SecurityContextHolder.getContext().setAuthentication(auth);
