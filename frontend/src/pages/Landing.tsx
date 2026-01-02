@@ -3,7 +3,7 @@ import { MessageSquare, Zap, Shield, Globe, MessageCircle, Users } from "lucide-
 import Fenek from "../assets/fenek.svg";
 import SocialLink from "../components/SocialLink";
 import FeatureCard from "../components/FeatureCard";
-import { useAuth } from "../auth/AuthContext";
+import { useAuth } from "../context/AuthContext";
 
 export default function Landing() {
     const navigate = useNavigate();

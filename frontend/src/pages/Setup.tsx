@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import Fenek from "../assets/fenek.svg";
-import { useAuth } from "../auth/AuthContext";
+import { useAuth } from "../context/AuthContext";
 import Avatar from "../components/Avatar";
 
 export default function Setup() {

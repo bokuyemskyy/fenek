@@ -1,4 +1,4 @@
-import {
+import React, {
     useEffect,
     createContext,
     useContext,
@@ -6,17 +6,23 @@ import {
     useRef,
     useCallback,
 } from 'react';
+import type { User, BatchUserRequest } from '../types/user';
 
-const UserContext = createContext(null);
+interface UserContextValue {
+    registry: Record<string, User>;
+    requestUser: (userId: string | undefined, force?: boolean) => void;
+}
 
-const CACHE_TTL_MS = 10 * 60 * 1000;
-const BATCH_DELAY_MS = 50;
+const UserContext = createContext<UserContextValue | null>(null);
+
+const CACHE_TTL_MS = 10 * 60 * 1000; // 10 mins
+const BATCH_DELAY_MS = 20;
 
 export const UserProvider = ({ children }: { children: React.ReactNode }) => {
-    const [registry, setRegistry] = useState({});
+    const [registry, setRegistry] = useState<Record<string, User>>({});
 
-    const pendingIdsRef = useRef(new Set());
-    const batchTimeoutRef = useRef(null);
+    const pendingIdsRef = useRef<Set<string>>(new Set());
+    const batchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const processQueue = async () => {
         const idsToFetch = Array.from(pendingIdsRef.current);
@@ -28,13 +34,15 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         try {
             const response = await fetch('/api/users/batch', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ids: idsToFetch }),
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ userIds: idsToFetch } as BatchUserRequest),
             });
 
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-            const newUsers = await response.json();
+            const data = await response.json();
+
+            const newUsers: User[] = data.users || [];
 
             setRegistry(prev => {
                 const next = { ...prev };
@@ -48,8 +56,10 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
                     if (!next[id]) {
                         next[id] = {
                             id,
-                            name: 'Unknown User',
-                            avatar: null,
+                            username: "unknown",
+                            displayName: 'Unknown User',
+                            color: "#808080",
+                            avatarUrl: undefined,
                             fetchedAt: now,
                         };
                     }
@@ -58,11 +68,11 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
                 return next;
             });
         } catch (e) {
-            console.error('Failed to fetch users', e);
+            console.error('Failed to fetch users batch', e);
         }
     };
 
-    const requestUser = useCallback((userId, force = false) => {
+    const requestUser = useCallback((userId?: string, force = false) => {
         if (!userId) return;
 
         setRegistry(prev => {
@@ -70,17 +80,13 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
             const now = Date.now();
 
             const isMissing = !cachedUser;
-            const isExpired =
-                cachedUser && now - cachedUser.fetchedAt > CACHE_TTL_MS;
+            const isExpired = cachedUser?.fetchedAt && (now - cachedUser.fetchedAt > CACHE_TTL_MS);
 
             if (force || isMissing || isExpired) {
                 pendingIdsRef.current.add(userId);
 
                 if (!batchTimeoutRef.current) {
-                    batchTimeoutRef.current = setTimeout(
-                        processQueue,
-                        BATCH_DELAY_MS
-                    );
+                    batchTimeoutRef.current = setTimeout(processQueue, BATCH_DELAY_MS);
                 }
             }
 
@@ -95,14 +101,14 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     );
 };
 
-export const useUser = (userId, force = false) => {
+export const useUser = (userId?: string, force = false): User | undefined => {
     const context = useContext(UserContext);
     if (!context) {
-        throw new Error('useUser must be used within UserRegistryProvider');
+        throw new Error('useUser must be used within UserProvider');
     }
 
     const { registry, requestUser } = context;
-    const user = registry[userId];
+    const user = userId ? registry[userId] : undefined;
 
     useEffect(() => {
         if (userId) {
