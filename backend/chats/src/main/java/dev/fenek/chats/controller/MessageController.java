@@ -13,8 +13,13 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 
 import dev.fenek.chats.auth.JwtUserPrincipal;
+import dev.fenek.chats.dto.CreateMessageRequest;
+import dev.fenek.chats.dto.EditMessageRequest;
+import dev.fenek.chats.dto.MessageEvent;
+import dev.fenek.chats.dto.MessageResponse;
 import dev.fenek.chats.model.Message;
 import dev.fenek.chats.service.ChatService;
+import dev.fenek.chats.service.MessageService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
@@ -29,10 +34,9 @@ public class MessageController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public MessageDto send(
+    public MessageResponse send(
             @AuthenticationPrincipal JwtUserPrincipal principal,
-            @RequestBody CreateMessageRequest request,
-            ) {
+            @RequestBody CreateMessageRequest request) {
 
         Message message = messageService.create(
                 principal.getUserId(),
@@ -41,13 +45,14 @@ public class MessageController {
 
         MessageEvent event = MessageEvent.created(message);
 
-        notifyChatParticipants(message.getChatId(), principal.getUserId(), event);
+        notifyChatParticipants(message.getChat().getId(), principal.getUserId(), event);
 
-        return MessageDto.from(message);
+        return new MessageResponse(message.getId(), message.getSenderId(), message.getContent(), message.getCreatedAt(),
+                message.getEditedAt(), message.getReplyTo().getId());
     }
 
     @PatchMapping("/{id}")
-    public MessageDto edit(
+    public MessageResponse edit(
             @AuthenticationPrincipal JwtUserPrincipal principal,
             @PathVariable UUID id,
             @RequestBody EditMessageRequest request) {
@@ -55,11 +60,12 @@ public class MessageController {
         Message updated = messageService.edit(id, principal.getUserId(), request.content());
 
         notifyChatParticipants(
-                updated.getChatId(),
+                updated.getChat().getId(),
                 principal.getUserId(),
                 MessageEvent.updated(updated));
 
-        return MessageDto.from(updated);
+        return new MessageResponse(updated.getId(), updated.getSenderId(), updated.getContent(), updated.getCreatedAt(),
+                updated.getEditedAt(), updated.getReplyTo().getId());
     }
 
     @DeleteMapping("/{id}")
@@ -71,9 +77,9 @@ public class MessageController {
         Message deleted = messageService.delete(id, principal.getUserId());
 
         notifyChatParticipants(
-                deleted.getChatId(),
+                deleted.getChat().getId(),
                 principal.getUserId(),
-                MessageEvent.deleted(deleted.getId()));
+                MessageEvent.deleted(deleted));
     }
 
     // @PostMapping("/{id}/reactions")
