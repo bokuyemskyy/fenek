@@ -1,7 +1,7 @@
 import type { NewChatProps } from "../types/overlay";
 import { User, Users } from "lucide-react";
 
-export default function NewChat({ anchorRect, onAction }: NewChatProps) {
+export default function NewChatOverlay({ anchorRect, onAction }: NewChatProps) {
 
     const style: React.CSSProperties = {
         position: "fixed",

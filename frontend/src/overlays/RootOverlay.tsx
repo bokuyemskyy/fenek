@@ -2,8 +2,8 @@ import { useEffect, useRef } from "react";
 import type { OverlayState, OverlayType } from "../types/overlay";
 
 // Components
-import NewChat from "./NewChat";
-import CreatePrivateChat from "./CreatePrivateChat";
+import NewChatOverlay from "./NewChatOverlay";
+import CreatePrivateChatOverlay from "./CreatePrivateChatOverlay";
 // import CreateGroupChat from "./CreateGroupChat"; 
 
 interface OverlayRootProps {
@@ -12,7 +12,7 @@ interface OverlayRootProps {
     onAction: (type: OverlayType) => void;
 }
 
-export default function OverlayRoot({ overlay, onClose, onAction }: OverlayRootProps) {
+export default function RootOverlay({ overlay, onClose, onAction }: OverlayRootProps) {
     const containerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -58,14 +58,14 @@ export default function OverlayRoot({ overlay, onClose, onAction }: OverlayRootP
             >
                 {overlay.type === "createPrivateChat" && (
                     <div className="pointer-events-auto">
-                        <CreatePrivateChat onClose={onClose} onAction={onAction} />
+                        <CreatePrivateChatOverlay onClose={onClose} onAction={onAction} />
                     </div>
                 )}
 
                 {/* overlay.type === "createGroup" && <CreateGroupChat ... /> */}
 
                 {overlay.type === "newChat" && (
-                    <NewChat
+                    <NewChatOverlay
                         anchorRect={overlay.anchorRect}
                         onClose={onClose}
                         onAction={onAction}

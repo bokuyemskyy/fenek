@@ -11,7 +11,7 @@ interface UserResult {
     color: string;
 }
 
-export default function CreatePrivateChat({ onClose }: CommonPopupProps) {
+export default function CreatePrivateChatOverlay({ onClose }: CommonPopupProps) {
 
     const [query, setQuery] = useState("");
     const [results, setResults] = useState<UserResult[]>([]);

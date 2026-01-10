@@ -1,26 +1,25 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Login from "./pages/Login";
-import Chats from "./pages/Chats";
-import { AuthProvider } from "./context/AuthContext";
-import { UserProvider } from "./context/UserContext";
+
+import LoginPage from "./pages/LoginPage";
+import ChatsPage from "./pages/ChatsPage";
+import LandingPage from "./pages/LandingPage";
+import SetupPage from "./pages/SetupPage";
+
+import { RouteAccess } from "./types/route";
 import ProtectedRoute from "./auth/ProtectedRoute";
-import Landing from "./pages/Landing";
-import Setup from "./pages/Setup";
-import { RouteAccess } from "./auth/RouteAccess";
+import { AppProviders } from "./contexts/AppProviders";
 
 export default function App() {
   return (
-    <AuthProvider>
-      <UserProvider>
-        <Router>
-          <Routes>
-            <Route path="/" element={<ProtectedRoute access={RouteAccess.Public}><Landing /></ProtectedRoute>} />
-            <Route path="/login" element={<ProtectedRoute access={RouteAccess.GuestOnly}><Login /></ProtectedRoute>} />
-            <Route path="/chats" element={<ProtectedRoute access={RouteAccess.CompleteProfile}><Chats /></ProtectedRoute>} />
-            <Route path="/setup" element={<ProtectedRoute access={RouteAccess.IncompleteProfile}><Setup /></ProtectedRoute>} />
-          </Routes>
-        </Router>
-      </UserProvider>
-    </AuthProvider>
+    <AppProviders>
+      <Router>
+        <Routes>
+          <Route path="/" element={<ProtectedRoute access={RouteAccess.Public}><LandingPage /></ProtectedRoute>} />
+          <Route path="/login" element={<ProtectedRoute access={RouteAccess.GuestOnly}><LoginPage /></ProtectedRoute>} />
+          <Route path="/chats" element={<ProtectedRoute access={RouteAccess.CompleteProfile}><ChatsPage /></ProtectedRoute>} />
+          <Route path="/setup" element={<ProtectedRoute access={RouteAccess.IncompleteProfile}><SetupPage /></ProtectedRoute>} />
+        </Routes>
+      </Router>
+    </AppProviders>
   );
 };
