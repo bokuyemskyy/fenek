@@ -3,9 +3,9 @@ import { Zap, Shield, MessageCircle, Users } from "lucide-react";
 import Fenek from "../assets/fenek.svg";
 import SocialLink from "../components/SocialLink";
 import FeatureCard from "../components/FeatureCard";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../contexts/AuthContext";
 
-export default function Landing() {
+export default function LandingPage() {
     const navigate = useNavigate();
     const { isAuthenticated } = useAuth();
 

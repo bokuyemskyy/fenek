@@ -2,16 +2,18 @@ import { useState, useEffect, useMemo } from "react";
 import { Menu, Search, Settings, PenSquare, Loader2 } from "lucide-react";
 import { ChatItem } from "../components/ChatItem";
 import Fenek from "../assets/fenek.svg";
-import OverlayRoot from "../overlay/OverlayRoot";
-import { useOverlay } from "../overlay/OverlayContext";
+import RootOverlay from "../overlay/RootOverlay";
+import { useOverlay } from "../contexts/OverlayContext";
 import type { ChatResponse, ChatUI } from "../types/chat";
+import { useUser, useUserRegistry } from "../contexts/UserContext";
 
-export default function Chats() {
+export default function ChatsPage() {
     const [chats, setChats] = useState<ChatUI[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [activeChat, setActiveChat] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+    const { registry, requestUsers } = useUserRegistry();
 
     const { overlay, close, switchOverlay, openNewChat } = useOverlay();
 
@@ -57,11 +59,28 @@ export default function Chats() {
         fetchChats();
     }, []);
 
+    useEffect(() => {
+        if (chats.length === 0) return;
+
+        const userIdsToLoad = chats
+            .filter(c => c.type === 'PRIVATE' && c.otherUserId)
+            .map(c => c.otherUserId as string);
+        requestUsers(userIdsToLoad);
+    }, [chats, requestUsers]);
+
     const filteredChats = useMemo(() => {
-        return chats.filter(chat =>
-            chat.title.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-    }, [chats, searchQuery]);
+        return chats.filter(chat => {
+            if (chat.type === 'PRIVATE') {
+                const user = registry[chat.otherUserId || ""];
+
+                if (!user) return false;
+
+                return user.displayName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    user.username?.toLowerCase().includes(searchQuery.toLowerCase());
+            }
+            return chat.title.toLowerCase().includes(searchQuery.toLowerCase());
+        });
+    }, [chats, searchQuery, registry]);
 
     return (
         <div className="flex h-screen bg-black text-white overflow-hidden">
@@ -151,7 +170,7 @@ export default function Chats() {
                 )}
             </div>
 
-            <OverlayRoot
+            <RootOverlay
                 overlay={overlay}
                 onClose={close}
                 onAction={switchOverlay}

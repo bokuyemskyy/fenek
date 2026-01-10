@@ -1,10 +1,10 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import Fenek from "../assets/fenek.svg";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../contexts/AuthContext";
 import Avatar from "../components/Avatar";
 
-export default function Setup() {
+export default function SetupPage() {
     const { user } = useAuth();
     const navigate = useNavigate();
 

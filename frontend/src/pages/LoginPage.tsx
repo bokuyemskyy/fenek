@@ -27,7 +27,7 @@ function GithubIcon() {
     );
 }
 
-export default function Login() {
+export default function LoginPage() {
     const location = useLocation();
     const queryParams = new URLSearchParams(location.search);
     const hasError = queryParams.has("error");
