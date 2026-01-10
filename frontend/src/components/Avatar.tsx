@@ -1,5 +1,3 @@
-import { Bookmark, Menu } from "lucide-react";
-
 interface AvatarProps {
     avatarUrl?: string | null;
     displayName?: string;

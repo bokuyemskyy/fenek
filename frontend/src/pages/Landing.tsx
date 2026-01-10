@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { MessageSquare, Zap, Shield, Globe, MessageCircle, Users } from "lucide-react";
+import { Zap, Shield, MessageCircle, Users } from "lucide-react";
 import Fenek from "../assets/fenek.svg";
 import SocialLink from "../components/SocialLink";
 import FeatureCard from "../components/FeatureCard";

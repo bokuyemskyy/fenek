@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Search, X, Loader2, User, Check } from "lucide-react";
 import type { CommonPopupProps } from "../types/overlay";
 import Avatar from "../components/Avatar";
@@ -64,7 +64,7 @@ export default function CreatePrivateChat({ onClose }: CommonPopupProps) {
         setIsCreating(true);
 
         try {
-            const res = await fetch(`/api/chats/private`,
+            await fetch(`/api/chats/private`,
                 {
                     method: "POST",
                     credentials: "include",

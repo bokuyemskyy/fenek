@@ -1,4 +1,4 @@
-import { Bookmark, User as UserIcon } from "lucide-react";
+import { Bookmark } from "lucide-react";
 import type { ChatUI } from "../types/chat";
 import Avatar from "./Avatar";
 import { formatTimeAgo } from "../utils/date";

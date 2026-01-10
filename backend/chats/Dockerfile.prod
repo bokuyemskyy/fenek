@@ -1,10 +1,35 @@
-FROM gradle:9.1-jdk25 AS build
+# BUILD
+
+FROM eclipse-temurin:25-jdk AS build
+
 WORKDIR /app
-COPY . .
-RUN gradle clean build --no-daemon
+
+COPY gradlew .
+COPY gradle gradle
+COPY build.gradle* settings.gradle* ./
+
+RUN ./gradlew dependencies --no-daemon
+
+COPY src src
+
+RUN ./gradlew bootJar --no-daemon
+
+# RUN
 
 FROM eclipse-temurin:25-jre
+
 WORKDIR /app
+
+RUN useradd -r -u 1001 appuser
+USER appuser
+
 COPY --from=build /app/build/libs/*.jar app.jar
+
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+
+ENTRYPOINT ["java", \
+    "-XX:+UseContainerSupport", \
+    "-jar", "app.jar"]
+
+
+
