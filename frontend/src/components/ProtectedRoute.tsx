@@ -1,9 +1,9 @@
 import { Navigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import { RouteAccess } from "./RouteAccess";
+import { useAuth } from "../contexts/AuthContext";
+import { RouteAccess } from "../types/route";
 import type { JSX } from "react";
 import { useState, useEffect } from "react";
-import LoadingScreen from "../components/Loading";
+import LoadingPage from "../pages/LoadingPage";
 
 export default function ProtectedRoute({ children, access }: { children: JSX.Element; access: RouteAccess }) {
     const { user, isAuthenticated, loading, refreshToken } = useAuth();
@@ -18,7 +18,7 @@ export default function ProtectedRoute({ children, access }: { children: JSX.Ele
     }, [isAuthenticated, attemptedRefresh, refreshToken, loading]);
 
     if (loading || (!isAuthenticated && !attemptedRefresh)) {
-        return <LoadingScreen />;
+        return <LoadingPage />;
     }
 
     if (access === RouteAccess.Public) return children;

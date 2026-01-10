@@ -2,7 +2,7 @@ import { Bookmark } from "lucide-react";
 import type { ChatUI } from "../types/chat";
 import Avatar from "./Avatar";
 import { formatTimeAgo } from "../utils/date";
-import { useUser } from "../context/UserContext";
+import { useUser } from "../contexts/UserContext";
 
 interface ChatItemProps {
     chat: ChatUI;
