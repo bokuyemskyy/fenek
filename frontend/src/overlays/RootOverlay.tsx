@@ -1,77 +1,67 @@
-import { useEffect, useRef } from "react";
-import type { OverlayState, OverlayType } from "../types/overlay";
+import { useEffect } from "react";
+import { OVERLAY_COMPONENTS } from "../types/overlay";
+import { useOverlay } from "../contexts/OverlayContext";
 
-// Components
-import NewChatOverlay from "./NewChatOverlay";
-import CreatePrivateChatOverlay from "./CreatePrivateChatOverlay";
-// import CreateGroupChat from "./CreateGroupChat"; 
-
-interface OverlayRootProps {
-    overlay: OverlayState;
-    onClose: () => void;
-    onAction: (type: OverlayType) => void;
-}
-
-export default function RootOverlay({ overlay, onClose, onAction }: OverlayRootProps) {
-    const containerRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        if (!overlay) return;
-
-        const handleEsc = (e: KeyboardEvent) => {
-            if (e.key === "Escape") onClose();
-        };
-
-        const handleClickOutside = (e: MouseEvent) => {
-            if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-                onClose();
-            }
-        };
-
-        document.addEventListener("keydown", handleEsc);
-        if (overlay.type === "newChat") {
-            document.addEventListener("mousedown", handleClickOutside);
-        }
-
-        return () => {
-            document.removeEventListener("keydown", handleEsc);
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, [overlay, onClose]);
+export function RootOverlayRenderer() {
+    const { overlay, close } = useOverlay();
 
     if (!overlay) return null;
 
-    const isModal = ["settings", "createPrivateChat", "createGroup"].includes(overlay.type);
+    const Component = OVERLAY_COMPONENTS[overlay.type];
+    const isPopup = !!overlay.anchor;
+
+    useEffect(() => {
+        const onKeyDown = (e: KeyboardEvent) => {
+            if (e.key === "Escape") close();
+        };
+        window.addEventListener("keydown", onKeyDown);
+        return () => window.removeEventListener("keydown", onKeyDown);
+    }, [close]);
+
+    if (!isPopup) {
+        return (
+            <div className="relative z-50">
+                {/* Dark Backdrop */}
+                <div
+                    className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+                    onClick={close}
+                />
+                {/* Centered Content */}
+                <div className="fixed inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="pointer-events-auto">
+                        <Component {...overlay.props} />
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="relative z-50">
-            {isModal && (
-                <div
-                    className="fixed inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
-                    onClick={onClose}
-                />
-            )}
+            {/* Transparent Backdrop for 'Click Outside' */}
+            <div className="fixed inset-0" onClick={close} />
 
-            <div
-                ref={containerRef}
-                className={isModal ? "fixed inset-0 flex items-center justify-center pointer-events-none" : ""}
-            >
-                {overlay.type === "createPrivateChat" && (
-                    <div className="pointer-events-auto">
-                        <CreatePrivateChatOverlay onClose={onClose} onAction={onAction} />
-                    </div>
-                )}
+            {/* Positioned Content */}
+            <PopupPositioner anchor={overlay.anchor!} >
+                <Component {...overlay.props} />
+            </PopupPositioner>
+        </div>
+    );
+}
 
-                {/* overlay.type === "createGroup" && <CreateGroupChat ... /> */}
+function PopupPositioner({ anchor, children }: { anchor: HTMLElement, children: React.ReactNode }) {
+    const rect = anchor.getBoundingClientRect();
 
-                {overlay.type === "newChat" && (
-                    <NewChatOverlay
-                        anchorRect={overlay.anchorRect}
-                        onClose={onClose}
-                        onAction={onAction}
-                    />
-                )}
-            </div>
+    const style: React.CSSProperties = {
+        position: "fixed",
+        top: rect.bottom + 8,
+        left: rect.left,
+        zIndex: 51,
+    };
+
+    return (
+        <div style={style} onClick={(e) => e.stopPropagation()}>
+            {children}
         </div>
     );
 }

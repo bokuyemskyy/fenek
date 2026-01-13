@@ -1,11 +1,11 @@
 import { Bookmark } from "lucide-react";
-import type { ChatUI } from "../types/chat";
+import type { Chat } from "../types/chat";
 import Avatar from "./Avatar";
 import { formatTimeAgo } from "../utils/date";
 import { useUser } from "../contexts/UserContext";
 
 interface ChatItemProps {
-    chat: ChatUI;
+    chat: Chat;
     isActive: boolean;
     onClick: () => void;
 }

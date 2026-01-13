@@ -113,14 +113,14 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     );
 };
 
-export const useUserRegistry = () => {
+export const useUsers = () => {
     const ctx = useContext(UserContext);
     if (!ctx) throw new Error("useUserRegistry must be used within UserProvider");
     return ctx;
 };
 
 export const useUser = (userId?: string): User | undefined => {
-    const { registry, requestUsers } = useUserRegistry();
+    const { registry, requestUsers } = useUsers();
 
     useEffect(() => {
         if (userId) requestUsers([userId]);

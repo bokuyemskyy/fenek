@@ -15,7 +15,7 @@ export interface ChatResponse {
     createdAt: string;
 }
 
-export interface ChatUI {
+export interface Chat {
     id: string;
     type: ChatType;
     title: string;

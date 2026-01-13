@@ -1,21 +1,12 @@
-export type OverlayType =
-    | "settings"
-    | "createPrivateChat"
-    | "createGroup"
-    | "newChat";
+import CreateChatOverlay from "../overlays/CreateChatOverlay";
+import CreatePrivateChatOverlay from "../overlays/CreatePrivateChatOverlay";
+import { MenuOverlay } from "../overlays/MenuOverlay";
 
-export type OverlayState =
-    | { type: "settings" }
-    | { type: "createPrivateChat" }
-    | { type: "createGroup" }
-    | { type: "newChat"; anchorRect: DOMRect }
-    | null;
+export const OVERLAY_COMPONENTS = {
+    createChat: CreateChatOverlay,
+    menu: MenuOverlay,
+    createPrivateChat: CreatePrivateChatOverlay,
+    createGroup: CreatePrivateChatOverlay
+};
 
-export interface CommonPopupProps {
-    onClose: () => void;
-    onAction: (nextType: OverlayType) => void;
-}
-
-export interface NewChatProps extends CommonPopupProps {
-    anchorRect: DOMRect;
-}
+export type OverlayType = keyof typeof OVERLAY_COMPONENTS;

@@ -2,71 +2,35 @@ import { useState, useEffect, useMemo } from "react";
 import { Menu, Search, Settings, PenSquare, Loader2 } from "lucide-react";
 import { ChatItem } from "../components/ChatItem";
 import Fenek from "../assets/fenek.svg";
-import RootOverlay from "../overlay/RootOverlay";
+import { RootOverlayRenderer } from "../overlays/RootOverlay";
 import { useOverlay } from "../contexts/OverlayContext";
-import type { ChatResponse, ChatUI } from "../types/chat";
-import { useUser, useUserRegistry } from "../contexts/UserContext";
+import { useUser, useUsers } from "../contexts/UserContext";
+import { useChats } from "../contexts/ChatContext";
+import { ChatContent } from "../components/ChatContent";
 
 export default function ChatsPage() {
-    const [chats, setChats] = useState<ChatUI[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [activeChat, setActiveChat] = useState<string | null>(null);
+    const {
+        chats,
+        isLoading,
+        activeChatId,
+        setActiveChatId,
+        reloadChats
+    } = useChats();
+    const { registry, requestUsers } = useUsers();
+
     const [searchQuery, setSearchQuery] = useState("");
-    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-    const { registry, requestUsers } = useUserRegistry();
-
-    const { overlay, close, switchOverlay, openNewChat } = useOverlay();
-
-    useEffect(() => {
-        const fetchChats = async () => {
-            try {
-                const response = await fetch(`/api/chats/`, {
-                    method: "GET",
-                    headers: { "Content-Type": "application/json" },
-                });
-
-                if (response.ok) {
-                    const data: ChatResponse[] = await response.json();
-
-                    const formattedChats: ChatUI[] = data.map((dto) => {
-                        let displayTitle = dto.title;
-                        if (dto.type === 'PRIVATE' && !displayTitle) {
-                            displayTitle = "Unknown User";
-                        }
-
-                        return {
-                            id: dto.id,
-                            type: dto.type,
-                            otherUserId: dto.otherUserId,
-
-                            title: displayTitle || "Untitled Chat",
-                            description: dto.description,
-                            imageUrl: dto.imageUrl,
-                            lastMessage: dto.lastMessageSnippet || "No messages yet",
-                            timestamp: dto.lastMessageTimestamp,
-                        };
-                    });
-
-                    setChats(formattedChats);
-                }
-            } catch (error) {
-                console.error("Error fetching chats:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchChats();
-    }, []);
 
     useEffect(() => {
         if (chats.length === 0) return;
-
-        const userIdsToLoad = chats
+        const userIds = chats
             .filter(c => c.type === 'PRIVATE' && c.otherUserId)
             .map(c => c.otherUserId as string);
-        requestUsers(userIdsToLoad);
+        requestUsers(userIds);
     }, [chats, requestUsers]);
+
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
+    const { open } = useOverlay();
 
     const filteredChats = useMemo(() => {
         return chats.filter(chat => {
@@ -107,12 +71,13 @@ export default function ChatsPage() {
 
 
                     <div className="ml-auto flex items-center gap-1">
-                        <button className="p-2 hover:bg-white/5 rounded-lg transition-colors text-white/70 hover:text-white">
+                        <button className="p-2 hover:bg-white/5 rounded-lg transition-colors text-white/70 hover:text-white"
+                            onClick={() => open("menu")}>
                             <Settings className="w-5 h-5" />
                         </button>
                         <button
                             className="p-2 hover:bg-white/5 rounded-lg transition-colors text-white/70 hover:text-white"
-                            onClick={(e) => openNewChat(e.currentTarget.getBoundingClientRect())}
+                            onClick={(e) => open("createChat", undefined, e.currentTarget)}
                         >
                             <PenSquare className="w-5 h-5" />
                         </button>
@@ -131,8 +96,8 @@ export default function ChatsPage() {
                             <ChatItem
                                 key={chat.id}
                                 chat={chat}
-                                isActive={activeChat === chat.id}
-                                onClick={() => setActiveChat(chat.id)}
+                                isActive={activeChatId === chat.id}
+                                onClick={() => setActiveChatId(chat.id)}
                             />
                         ))
                     )}
@@ -159,10 +124,8 @@ export default function ChatsPage() {
 
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col bg-black relative">
-                {activeChat ? (
-                    <div className="flex items-center justify-center flex-1">
-                        <p>Chat Content for {activeChat}</p>
-                    </div>
+                {activeChatId ? (
+                    <ChatContent chatId={activeChatId} />
                 ) : (
                     <div className="flex-1 flex flex-col items-center justify-center text-white/30 gap-4">
                         <h2 className="text-lg font-medium">Select a chat to start messaging</h2>
@@ -170,11 +133,7 @@ export default function ChatsPage() {
                 )}
             </div>
 
-            <RootOverlay
-                overlay={overlay}
-                onClose={close}
-                onAction={switchOverlay}
-            />
+            <RootOverlayRenderer />
         </div>
     );
 }

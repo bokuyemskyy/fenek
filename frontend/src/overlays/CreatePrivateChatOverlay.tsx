@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Search, X, Loader2, User, Check } from "lucide-react";
-import type { CommonPopupProps } from "../types/overlay";
 import Avatar from "../components/Avatar";
+import { useOverlay } from "../contexts/OverlayContext";
 
 interface UserResult {
     id: string;
@@ -11,7 +11,8 @@ interface UserResult {
     color: string;
 }
 
-export default function CreatePrivateChatOverlay({ onClose }: CommonPopupProps) {
+export default function CreatePrivateChatOverlay() {
+    const { close } = useOverlay();
 
     const [query, setQuery] = useState("");
     const [results, setResults] = useState<UserResult[]>([]);
@@ -74,7 +75,7 @@ export default function CreatePrivateChatOverlay({ onClose }: CommonPopupProps) 
                     body: JSON.stringify({ otherUserId: selectedUser.id })
                 });
 
-            onClose();
+            close();
         } catch (error) {
             console.error("Failed to create chat", error);
         } finally {
@@ -88,7 +89,7 @@ export default function CreatePrivateChatOverlay({ onClose }: CommonPopupProps) 
             <div className="p-6 border-b border-white/5 flex items-center justify-between">
                 <h2 className="text-xl font-medium text-white">New Chat</h2>
                 <button
-                    onClick={onClose}
+                    onClick={close}
                     className="p-2 rounded-full hover:bg-white/10 text-white/40 hover:text-white transition-colors"
                 >
                     <X className="w-5 h-5" />
