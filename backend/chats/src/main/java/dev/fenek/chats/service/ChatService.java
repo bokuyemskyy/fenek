@@ -33,7 +33,7 @@ public class ChatService {
 
         public List<UUID> getOtherMemberIds(UUID userId, UUID chatId) {
                 return chatMemberRepository.findOtherMembers(List.of(chatId), userId).stream()
-                                .map(member -> member.getId())
+                                .map(member -> member.getUserId())
                                 .toList();
         }
 

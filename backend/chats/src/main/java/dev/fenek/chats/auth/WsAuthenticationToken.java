@@ -1,7 +1,6 @@
 package dev.fenek.chats.auth;
 
 import java.util.Collection;
-import java.util.UUID;
 
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;

@@ -19,7 +19,7 @@ public record MessageEvent(
         return from(message, MessageEventType.CREATED);
     }
 
-    public static MessageEvent updated(Message message) {
+    public static MessageEvent edited(Message message) {
         return from(message, MessageEventType.UPDATED);
     }
 

@@ -3,34 +3,23 @@ package dev.fenek.chats.controller;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 
 import dev.fenek.chats.auth.JwtUserPrincipal;
 import dev.fenek.chats.dto.CreateMessageRequest;
 import dev.fenek.chats.dto.EditMessageRequest;
-import dev.fenek.chats.dto.MessageEvent;
 import dev.fenek.chats.dto.MessageResponse;
 import dev.fenek.chats.model.Message;
-import dev.fenek.chats.service.ChatService;
 import dev.fenek.chats.service.MessageService;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/messages")
+@RequestMapping("/messages")
 @RequiredArgsConstructor
 public class MessageController {
 
-        private final SimpMessagingTemplate messagingTemplate;
         private final MessageService messageService;
-        private final ChatService chatService;
 
         @PostMapping
         @ResponseStatus(HttpStatus.CREATED)
@@ -41,15 +30,10 @@ public class MessageController {
                 Message message = messageService.create(
                                 principal.getUserId(),
                                 request.chatId(),
-                                request.content());
+                                request.content(),
+                                request.replyToId());
 
-                MessageEvent event = MessageEvent.created(message);
-
-                notifyChatParticipants(message.getChat().getId(), principal.getUserId(), event);
-
-                return new MessageResponse(message.getId(), message.getSenderId(), message.getContent(),
-                                message.getCreatedAt(),
-                                message.getEditedAt(), message.getReplyTo().getId());
+                return MessageResponse.of(message);
         }
 
         @PatchMapping("/{id}")
@@ -60,14 +44,7 @@ public class MessageController {
 
                 Message updated = messageService.edit(id, principal.getUserId(), request.content());
 
-                notifyChatParticipants(
-                                updated.getChat().getId(),
-                                principal.getUserId(),
-                                MessageEvent.updated(updated));
-
-                return new MessageResponse(updated.getId(), updated.getSenderId(), updated.getContent(),
-                                updated.getCreatedAt(),
-                                updated.getEditedAt(), updated.getReplyTo().getId());
+                return MessageResponse.of(updated);
         }
 
         @DeleteMapping("/{id}")
@@ -78,10 +55,6 @@ public class MessageController {
 
                 Message deleted = messageService.delete(id, principal.getUserId());
 
-                notifyChatParticipants(
-                                deleted.getChat().getId(),
-                                principal.getUserId(),
-                                MessageEvent.deleted(deleted));
         }
 
         // @PostMapping("/{id}/reactions")
@@ -99,17 +72,4 @@ public class MessageController {
         // userId,
         // MessageEvent.reactionAdded(id, userId, request.emoji()));
         // }
-
-        private void notifyChatParticipants(
-                        UUID chatId,
-                        UUID senderId,
-                        Object event) {
-
-                for (UUID uid : chatService.getOtherMemberIds(senderId, chatId)) {
-                        messagingTemplate.convertAndSendToUser(
-                                        uid.toString(),
-                                        "/queue/events",
-                                        event);
-                }
-        }
 }

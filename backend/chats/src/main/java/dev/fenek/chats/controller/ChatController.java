@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 public class ChatController {
     private final ChatService chatService;
 
-    @GetMapping("/")
+    @GetMapping
     public List<ChatResponse> getChats(@AuthenticationPrincipal JwtUserPrincipal principal) {
         return chatService.getChats(principal.getUserId());
     }

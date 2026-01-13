@@ -25,4 +25,5 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
                   )
             """)
     List<Message> findLastMessagesForChats(@Param("chatIds") List<UUID> chatIds);
+
 }
