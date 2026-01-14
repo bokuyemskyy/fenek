@@ -2,29 +2,57 @@
 
 ## Overview
 
-A messaging platform built with **React** and **Java Spring Boot**, designed to support **encrypted chats**, **real-time communication**, and **federated authentication**.
-Currently the project is on the stage of development and focuses on backend architecture. The frontend remains minimal.
+A microservices-based real-time messenger. Built to handle scaling asynchronous message delivery, and secure third-party authentication.
 
 ## Features
-- Integrated authentication with **Keycloak (OpenID Connect)** which supports local credentials and Google OAuth.
-* Microservice-based architecture, each component should be separated for modularity.
-* Planned **WebSocket** support for real-time encrypted chat.
-* Dockerized dev-containers and docker compose for reproducible environment.
-* Security-oriented design
+
+* **Microservices**: Decoupled backend services behind an NGINX API Gateway.
+* **Real-time**: Instant messaging using STOMP over WebSockets.
+* **Async**: Inter-service communication via RabbitMQ message broker.
+* **Auth**: Secure login using Google and GitHub (OAuth2).
+* **Storage**: S3-compatible media uploads using MinIO.
 
 ## Technical stack
 
-### Core technologies
+### Core
 
-* Backend: Java 25, Spring Boot, Spring Security, Keycloak
-* Frontend: React
-* Database: PostgreSQL
-* Communication: REST APIs, WebSockets, planned Kafka
-* Containerization: Docker, Docker Compose
+* **Backend**: Java 21, Spring Boot 3, Spring Security.
+* **Frontend**: React, TypeScript.
+* **Communication**: REST API, WebSockets (STOMP), RabbitMQ.
 
-### Infrastructure and tooling
+### Infrastructure
 
-* Authentication: Keycloak OpenID Connect
-* Build: Gradle 9.1.0
-* CI/CD: planned GitHub Actions
-* Gateway: custom NodeJS
+* **Persistence**: PostgreSQL, Redis (caching).
+* **Storage**: MinIO (S3).
+* **Proxy**: NGINX.
+* **Containerization**: Docker, Docker Compose.
+
+## Usage
+
+## Environment setup
+
+Create a `./inftastructure/docker/.env` file:
+
+```bash
+POSTGRES_USER=your_user
+POSTGRES_PASSWORD=your_password
+RABBITMQ_USER=your_user
+RABBITMQ_PASSWORD=your_password
+MINIO_USER=your_user
+MINIO_PASSWORD=your_password
+GOOGLE_CLIENT_ID=your_google_auth_client_id
+GOOGLE_CLIENT_SECRET=your_google_auth_client_secret
+GITHUB_CLIENT_ID=your_github_auth_client_id
+GITHUB_CLIENT_SECRET=your_github_auth_client_secret
+JWT_SECRET_BASE_64=9p619sjdCSPmvDw785S1K3keqaAybG1erKaU7XXV8ws=
+JWT_EXPIRATION_SECONDS=900
+JWT_REFRESH_EXPIRATION_SECONDS=604800
+```
+
+### Run the project
+
+Ensure you have Docker installed, then run from root directory:
+
+```bash
+docker compose -f ./infrastructure/docker/compose.yaml up --build
+```
