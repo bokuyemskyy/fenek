@@ -2,17 +2,6 @@ package dev.fenek.chats.dto;
 
 import java.util.UUID;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class UserResponse {
-    private UUID id;
-    private String username;
-    private String displayName;
-    private String color;
-    private String avatarUrl;
+public record UserResponse(
+        UUID id, String username, String displayName, String color, String avatarUrl) {
 }

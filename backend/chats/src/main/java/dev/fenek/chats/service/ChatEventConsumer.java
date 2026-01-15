@@ -1,7 +1,6 @@
 package dev.fenek.chats.service;
 
 import dev.fenek.chats.config.ChatEventsConfig;
-import dev.fenek.chats.config.RabbitConfig;
 import dev.fenek.chats.dto.MessageEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

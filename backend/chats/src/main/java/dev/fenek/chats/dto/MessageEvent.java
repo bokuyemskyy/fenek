@@ -6,7 +6,7 @@ import java.util.UUID;
 import dev.fenek.chats.model.Message;
 
 public record MessageEvent(
-        MessageEventType type,
+        Type type,
         UUID messageId,
         UUID chatId,
         UUID senderId,
@@ -16,16 +16,16 @@ public record MessageEvent(
         UUID replyToId) {
 
     public static MessageEvent created(Message message) {
-        return from(message, MessageEventType.CREATED);
+        return from(message, Type.CREATED);
     }
 
     public static MessageEvent edited(Message message) {
-        return from(message, MessageEventType.UPDATED);
+        return from(message, Type.UPDATED);
     }
 
     public static MessageEvent deleted(Message message) {
         return new MessageEvent(
-                MessageEventType.DELETED,
+                Type.DELETED,
                 message.getId(),
                 message.getChat().getId(),
                 message.getSenderId(),
@@ -35,7 +35,7 @@ public record MessageEvent(
                 message.getReplyTo() != null ? message.getReplyTo().getId() : null);
     }
 
-    private static MessageEvent from(Message message, MessageEventType type) {
+    private static MessageEvent from(Message message, Type type) {
         return new MessageEvent(
                 type,
                 message.getId(),
@@ -45,5 +45,11 @@ public record MessageEvent(
                 message.getCreatedAt(),
                 message.getEditedAt(),
                 message.getReplyTo() != null ? message.getReplyTo().getId() : null);
+    }
+
+    public enum Type {
+        CREATED,
+        UPDATED,
+        DELETED
     }
 }

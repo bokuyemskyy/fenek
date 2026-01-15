@@ -57,11 +57,11 @@ public class MessageController {
 
         }
 
-        // @PostMapping("/{id}/reactions")
-        // public void react(
-        // @PathVariable UUID id,
-        // @RequestBody ReactionRequest request,
-        // HttpServletRequest http) {
+        @PostMapping("/{id}/reactions")
+        public void react(
+        @PathVariable UUID id,
+        @AuthenticationPrincipal JwtUserPrincipal principal,
+        @RequestBody ReactionRequest request ) {
 
         // UUID userId = (UUID) http.getAttribute("uid");
 
