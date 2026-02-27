@@ -29,6 +29,6 @@ public class ChatController {
     @PostMapping("/private")
     public ChatResponse createPrivateChat(@AuthenticationPrincipal JwtUserPrincipal principal,
             @RequestBody CreatePrivateChatRequest request) {
-        return chatService.createPrivateChat(principal.getUserId(), request.getOtherUserId());
+        return chatService.createPrivateChat(principal.getUserId(), request.otherUserId());
     }
 }

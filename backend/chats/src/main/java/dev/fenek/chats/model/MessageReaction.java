@@ -31,5 +31,5 @@ public class MessageReaction {
     private UUID userId;
 
     @Column(nullable = false)
-    private String reaction;
+    private String emoji;
 }

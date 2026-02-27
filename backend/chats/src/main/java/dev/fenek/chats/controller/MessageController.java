@@ -3,6 +3,8 @@ package dev.fenek.chats.controller;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,6 +12,9 @@ import dev.fenek.chats.auth.JwtUserPrincipal;
 import dev.fenek.chats.dto.CreateMessageRequest;
 import dev.fenek.chats.dto.EditMessageRequest;
 import dev.fenek.chats.dto.MessageResponse;
+import dev.fenek.chats.dto.ReactionRequest;
+import dev.fenek.chats.dto.TypingCommand;
+import dev.fenek.chats.dto.TypingEvent;
 import dev.fenek.chats.model.Message;
 import dev.fenek.chats.service.MessageService;
 import lombok.RequiredArgsConstructor;
@@ -53,23 +58,31 @@ public class MessageController {
                         @AuthenticationPrincipal JwtUserPrincipal principal,
                         @PathVariable UUID id) {
 
-                Message deleted = messageService.delete(id, principal.getUserId());
+                messageService.delete(id, principal.getUserId());
 
         }
 
-        @PostMapping("/{id}/reactions")
+        @PostMapping("/{id}/react")
         public void react(
-        @PathVariable UUID id,
-        @AuthenticationPrincipal JwtUserPrincipal principal,
-        @RequestBody ReactionRequest request ) {
+                        @PathVariable UUID id,
+                        @AuthenticationPrincipal JwtUserPrincipal principal,
+                        @RequestBody ReactionRequest request) {
 
-        // UUID userId = (UUID) http.getAttribute("uid");
+                messageService.react(id, principal.getUserId(), request.emoji());
+        }
 
-        // messageService.react(id, userId, request.emoji());
+        @DeleteMapping("/{id}/react")
+        public void unreact(
+                        @PathVariable UUID id,
+                        @AuthenticationPrincipal JwtUserPrincipal principal) {
 
-        // notifyChatParticipants(
-        // request.chatId(),
-        // userId,
-        // MessageEvent.reactionAdded(id, userId, request.emoji()));
-        // }
+                messageService.unreact(id, principal.getUserId());
+        }
+
+        @MessageMapping("/typing")
+        public void typing(@AuthenticationPrincipal JwtUserPrincipal principal,
+                        @Payload TypingCommand command) {
+
+                messageService.typing(principal.getUserId(), command.chatId(), command.typing());
+        }
 }
