@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { OVERLAY_COMPONENTS } from "../types/overlay";
 import { useOverlay } from "../contexts/OverlayContext";
 
-export function RootOverlayRenderer() {
+export function RootOverlay() {
     const { overlay, close } = useOverlay();
 
     if (!overlay) return null;

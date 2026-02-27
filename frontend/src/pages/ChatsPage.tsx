@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Menu, Search, Settings, PenSquare, Loader2 } from "lucide-react";
 import { ChatItem } from "../components/ChatItem";
 import Fenek from "../assets/fenek.svg";
-import { RootOverlayRenderer } from "../overlays/RootOverlay";
+import { RootOverlay } from "../overlays/RootOverlay";
 import { useOverlay } from "../contexts/OverlayContext";
 import { useUser, useUsers } from "../contexts/UserContext";
 import { useChats } from "../contexts/ChatContext";
@@ -132,8 +132,6 @@ export default function ChatsPage() {
                     </div>
                 )}
             </div>
-
-            <RootOverlayRenderer />
         </div>
     );
 }
