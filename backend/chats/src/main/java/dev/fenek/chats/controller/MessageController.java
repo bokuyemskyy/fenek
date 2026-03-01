@@ -14,7 +14,6 @@ import dev.fenek.chats.dto.EditMessageRequest;
 import dev.fenek.chats.dto.MessageResponse;
 import dev.fenek.chats.dto.ReactionRequest;
 import dev.fenek.chats.dto.TypingCommand;
-import dev.fenek.chats.dto.TypingEvent;
 import dev.fenek.chats.model.Message;
 import dev.fenek.chats.service.MessageService;
 import lombok.RequiredArgsConstructor;
@@ -42,12 +41,12 @@ public class MessageController {
         }
 
         @PatchMapping("/{id}")
-        public MessageResponse edit(
+        public MessageResponse update(
                         @AuthenticationPrincipal JwtUserPrincipal principal,
                         @PathVariable UUID id,
                         @RequestBody EditMessageRequest request) {
 
-                Message updated = messageService.edit(id, principal.getUserId(), request.content());
+                Message updated = messageService.update(id, principal.getUserId(), request.content());
 
                 return MessageResponse.of(updated);
         }
@@ -83,6 +82,9 @@ public class MessageController {
         public void typing(@AuthenticationPrincipal JwtUserPrincipal principal,
                         @Payload TypingCommand command) {
 
-                messageService.typing(principal.getUserId(), command.chatId(), command.typing());
+                if (command.typing())
+                        messageService.startTyping(principal.getUserId(), command.chatId());
+                else
+                        messageService.stopTyping(principal.getUserId(), command.chatId());
         }
 }

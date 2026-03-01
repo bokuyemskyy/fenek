@@ -7,9 +7,16 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
 import dev.fenek.chats.config.ChatEventsConfig;
-import dev.fenek.chats.dto.MessageEvent;
-import dev.fenek.chats.dto.ReactionEvent;
-import dev.fenek.chats.dto.TypingEvent;
+import dev.fenek.chats.config.ChatRoutingKeys;
+import dev.fenek.chats.config.EventConfig;
+import dev.fenek.chats.config.EventConfig.RoutingKeys;
+import dev.fenek.chats.dto.MessageCreatedEvent;
+import dev.fenek.chats.dto.MessageDeletedEvent;
+import dev.fenek.chats.dto.MessageUpdatedEvent;
+import dev.fenek.chats.dto.ReactionCreatedEvent;
+import dev.fenek.chats.dto.ReactionDeletedEvent;
+import dev.fenek.chats.dto.TypingStartedEvent;
+import dev.fenek.chats.dto.TypingStoppedEvent;
 import dev.fenek.chats.exception.ChatNotFoundException;
 import dev.fenek.chats.exception.MessageNotFoundException;
 import dev.fenek.chats.exception.NotAllowedToModifyMessageException;
@@ -44,14 +51,13 @@ public class MessageService {
 
         messageRepository.save(message);
 
-        MessageEvent event = MessageEvent.deleted(message);
-
-        rabbitTemplate.convertAndSend(ChatEventsConfig.EXCHANGE, "chats.event.deleted", event);
+        rabbitTemplate.convertAndSend(EventConfig.EXCHANGE, RoutingKeys.MESSAGE_DELETED,
+                MessageDeletedEvent.from(message));
 
         return message;
     }
 
-    public Message edit(UUID id, UUID userId, String content) {
+    public Message update(UUID id, UUID userId, String content) {
         Message message = messageRepository.findById(id)
                 .orElseThrow(() -> new MessageNotFoundException());
 
@@ -66,9 +72,8 @@ public class MessageService {
 
         messageRepository.save(message);
 
-        MessageEvent event = MessageEvent.edited(message);
-
-        rabbitTemplate.convertAndSend(ChatEventsConfig.EXCHANGE, "chats.event.updated", event);
+        rabbitTemplate.convertAndSend(EventConfig.EXCHANGE, RoutingKeys.MESSAGE_UPDATED,
+                MessageUpdatedEvent.from(message));
 
         return message;
     }
@@ -96,9 +101,8 @@ public class MessageService {
 
         messageRepository.save(message);
 
-        MessageEvent event = MessageEvent.created(message);
-
-        rabbitTemplate.convertAndSend(ChatEventsConfig.EXCHANGE, "chats.event.created", event);
+        rabbitTemplate.convertAndSend(EventConfig.EXCHANGE, RoutingKeys.MESSAGE_CREATED,
+                MessageCreatedEvent.from(message));
 
         return message;
     }
@@ -113,8 +117,8 @@ public class MessageService {
         int deleted = messageReactionRepository.deleteByMessageIdAndUserId(id, userId);
 
         if (deleted > 0) {
-            ReactionEvent event = ReactionEvent.deleted(id, userId);
-            rabbitTemplate.convertAndSend(ChatEventsConfig.EXCHANGE, "chats.event.react", event);
+            rabbitTemplate.convertAndSend(EventConfig.EXCHANGE, RoutingKeys.REACTION_DELETED,
+                    ReactionDeletedEvent.of(id, userId));
         }
 
         MessageReaction reaction = MessageReaction.builder()
@@ -125,9 +129,8 @@ public class MessageService {
 
         messageReactionRepository.save(reaction);
 
-        ReactionEvent event = ReactionEvent.created(reaction);
-
-        rabbitTemplate.convertAndSend(ChatEventsConfig.EXCHANGE, "chats.event.react", event);
+        rabbitTemplate.convertAndSend(EventConfig.EXCHANGE, RoutingKeys.REACTION_CREATED,
+                ReactionCreatedEvent.from(reaction));
     }
 
     public void unreact(UUID id, UUID userId) {
@@ -140,18 +143,26 @@ public class MessageService {
         int deleted = messageReactionRepository.deleteByMessageIdAndUserId(id, userId);
 
         if (deleted > 0) {
-            ReactionEvent event = ReactionEvent.deleted(id, userId);
-            rabbitTemplate.convertAndSend(ChatEventsConfig.EXCHANGE, "chats.event.react", event);
+            rabbitTemplate.convertAndSend(EventConfig.EXCHANGE, RoutingKeys.REACTION_DELETED,
+                    ReactionDeletedEvent.of(id, userId));
         }
     }
 
-    public void typing(UUID userId, UUID chatId, boolean typing) {
+    public void startTyping(UUID userId, UUID chatId) {
         if (!chatService.isMember(userId, chatId)) {
             throw new ChatNotFoundException();
         }
 
-        TypingEvent event = new TypingEvent(chatId, userId, typing);
+        rabbitTemplate.convertAndSend(EventConfig.REALTIME_EXCHANGE, RoutingKeys.TYPING_STARTED,
+                new TypingStartedEvent(chatId, userId));
+    }
 
-        rabbitTemplate.convertAndSend(ChatEventsConfig.EXCHANGE, "chats.event.typing", event);
+    public void stopTyping(UUID userId, UUID chatId) {
+        if (!chatService.isMember(userId, chatId)) {
+            throw new ChatNotFoundException();
+        }
+
+        rabbitTemplate.convertAndSend(EventConfig.REALTIME_EXCHANGE, RoutingKeys.TYPING_STOPPED,
+                new TypingStoppedEvent(chatId, userId));
     }
 }
