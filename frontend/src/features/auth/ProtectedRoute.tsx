@@ -1,8 +1,8 @@
 import { Navigate } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "./AuthContext";
 import type { JSX } from "react";
 import { useState, useEffect } from "react";
-import LoadingPage from "../pages/LoadingPage";
+import LoadingPage from "@pages/LoadingPage";
 
 export const RouteAccess = {
     Public: "public",

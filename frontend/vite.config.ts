@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import path from 'node:path'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -20,6 +21,15 @@ export default defineConfig({
   preview: {
     port: 3000,
     strictPort: true
+  },
+  resolve: {
+    alias: {
+      "@app": path.resolve(__dirname, "src/app"),
+      "@components": path.resolve(__dirname, "src/components"),
+      "@features": path.resolve(__dirname, "src/features"),
+      "@pages": path.resolve(__dirname, "src/pages"),
+      "@assets": path.resolve(__dirname, "src/assets")
+    }
   }
 })
 

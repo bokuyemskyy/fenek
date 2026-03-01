@@ -1,10 +1,10 @@
 import { Route, Routes } from "react-router-dom";
 
-import { ChatProvider } from "../contexts/ChatContext";
-import { OverlayProvider } from "../contexts/OverlayContext";
-import { UserProvider } from "../contexts/UserContext";
-import ChatsPage from "../pages/ChatsPage";
-import { RootOverlay } from "../overlays/RootOverlay";
+import { OverlayProvider } from "@features/overlay/OverlayContext";
+import { RootOverlay } from "@features/overlay/RootOverlay";
+import { ChatProvider } from "@features/chat/ChatContext";
+import { UserProvider } from "@features/user/UserContext";
+import ChatsPage from "@features/chat/ChatsPage";
 
 export default function AppShell() {
     return (

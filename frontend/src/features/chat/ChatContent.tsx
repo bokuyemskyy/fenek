@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { Send, Smile } from "lucide-react";
-import Avatar from "./Avatar";
-import { useUser } from "../contexts/UserContext";
-import { useChats } from "../contexts/ChatContext";
+import Avatar from "@components/Avatar";
+import { useUser } from "@features/user/UserContext";
+import { useChats } from "@features/chat/ChatContext";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 
@@ -23,12 +23,11 @@ export function ChatContent({ chatId }: ChatContentProps) {
     const chat = chats.find(c => c.id === chatId);
     const stompClient = useRef<Client | null>(null);
 
-    // 1. WebSocket Connection Logic
     useEffect(() => {
         const client = new Client({
-            brokerURL: `ws://${window.location.host}/ws`, // Nginx will proxy this
+            brokerURL: `ws://${window.location.host}/ws`,
             webSocketFactory: () => new SockJS("/ws"),
-            debug: (str) => console.log("STOMP:", str), // Fallback for SockJS
+            debug: (str) => console.log("STOMP:", str),
             onConnect: () => {
                 console.log("Connected to WebSocket");
                 client.subscribe("/user/queue/events", (message) => {
@@ -50,7 +49,6 @@ export function ChatContent({ chatId }: ChatContentProps) {
         };
     }, []);
 
-    // 2. HTTP POST Logic
     const handleSend = async () => {
         if (!message.trim()) return;
 

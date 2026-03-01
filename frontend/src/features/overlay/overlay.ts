@@ -1,6 +1,6 @@
-import CreateChatOverlay from "../overlays/CreateChatOverlay";
-import CreatePrivateChatOverlay from "../overlays/CreatePrivateChatOverlay";
-import { MenuOverlay } from "../overlays/MenuOverlay";
+import CreateChatOverlay from "@features/overlay/CreateChatOverlay";
+import CreatePrivateChatOverlay from "@features/overlay/CreatePrivateChatOverlay";
+import { MenuOverlay } from "@features/overlay/MenuOverlay";
 
 export const OVERLAY_COMPONENTS = {
     createChat: CreateChatOverlay,

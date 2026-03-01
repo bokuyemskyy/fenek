@@ -1,10 +1,10 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
-import LoginPage from "../pages/LoginPage";
-import SetupPage from "../pages/SetupPage";
-import LandingPage from "../pages/LandingPage";
+import LoginPage from "@features/auth/LoginPage";
+import SetupPage from "@features/auth/SetupPage";
+import LandingPage from "@pages/LandingPage";
 
-import { AuthProvider } from "../contexts/AuthContext";
+import { AuthProvider } from "@features/auth/AuthContext";
 import { AuthenticatedRoute, GuestRoute, IncompleteProfileRoute, PublicRoute } from "./Routes";
 import AppShell from "./AppShell";
 

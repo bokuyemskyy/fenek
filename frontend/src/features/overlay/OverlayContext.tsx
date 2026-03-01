@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
-import type { OverlayType } from "../types/overlay";
+import type { OverlayType } from "@features/overlay/overlay";
 
 type OverlayState = {
     type: OverlayType;

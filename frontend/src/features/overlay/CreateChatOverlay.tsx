@@ -1,5 +1,5 @@
 import { User, Users } from "lucide-react";
-import { useOverlay } from "../contexts/OverlayContext";
+import { useOverlay } from "@features/overlay/OverlayContext";
 
 export interface CreateChatProps {
     anchorRect: DOMRect;

@@ -1,12 +1,11 @@
 import { useState, useEffect, useMemo } from "react";
 import { Menu, Search, Settings, PenSquare, Loader2 } from "lucide-react";
-import { ChatItem } from "../components/ChatItem";
-import Fenek from "../assets/fenek.svg";
-import { RootOverlay } from "../overlays/RootOverlay";
-import { useOverlay } from "../contexts/OverlayContext";
-import { useUser, useUsers } from "../contexts/UserContext";
-import { useChats } from "../contexts/ChatContext";
-import { ChatContent } from "../components/ChatContent";
+import { ChatItem } from "./ChatItem";
+import Fenek from "@assets/fenek.svg";
+import { useOverlay } from "@features/overlay/OverlayContext";
+import { useUsers } from "@features/user/UserContext";
+import { useChats } from "@features/chat/ChatContext";
+import { ChatContent } from "./ChatContent";
 
 export default function ChatsPage() {
     const {

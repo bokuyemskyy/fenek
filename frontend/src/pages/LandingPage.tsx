@@ -1,9 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import { Zap, Shield, MessageCircle, Users } from "lucide-react";
-import Fenek from "../assets/fenek.svg";
-import SocialLink from "../components/SocialLink";
-import FeatureCard from "../components/FeatureCard";
-import { useAuth } from "../contexts/AuthContext";
+import Fenek from "@assets/fenek.svg";
+import SocialLink from "@components/SocialLink";
+import FeatureCard from "@components/FeatureCard";
+import { useAuth } from "@features/auth/AuthContext";
 
 export default function LandingPage() {
     const navigate = useNavigate();

@@ -1,8 +1,8 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import Fenek from "../assets/fenek.svg";
-import { useAuth } from "../contexts/AuthContext";
-import Avatar from "../components/Avatar";
+import Fenek from "@assets/fenek.svg";
+import { useAuth } from "./AuthContext";
+import Avatar from "@components/Avatar";
 
 export default function SetupPage() {
     const { user } = useAuth();

@@ -1,8 +1,8 @@
 import { Bookmark } from "lucide-react";
-import type { Chat } from "../types/chat";
-import Avatar from "./Avatar";
-import { formatTimeAgo } from "../utils/date";
-import { useUser } from "../contexts/UserContext";
+import type { Chat } from "./chat";
+import Avatar from "@components/Avatar";
+import { formatTimeAgo } from "./date";
+import { useUser } from "@features/user/UserContext";
 
 interface ChatItemProps {
     chat: Chat;

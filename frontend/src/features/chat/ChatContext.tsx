@@ -5,7 +5,7 @@ import React, {
     useCallback,
     useEffect
 } from "react";
-import type { Chat, ChatResponse } from "../types/chat";
+import type { Chat, ChatResponse } from "@features/chat/chat";
 
 interface ChatContextType {
     chats: Chat[];

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Search, X, Loader2, User, Check } from "lucide-react";
-import Avatar from "../components/Avatar";
-import { useOverlay } from "../contexts/OverlayContext";
+import Avatar from "@components/Avatar";
+import { useOverlay } from "./OverlayContext";
 
 interface UserResult {
     id: string;

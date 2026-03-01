@@ -6,7 +6,7 @@ import React, {
     useRef,
     useCallback,
 } from 'react';
-import type { User, BatchUserRequest } from '../types/user';
+import type { User, BatchUserRequest } from './user';
 
 interface UserContextValue {
     registry: Record<string, User>;

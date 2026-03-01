@@ -1,4 +1,4 @@
-import ProtectedRoute, { RouteAccess } from "../components/ProtectedRoute";
+import ProtectedRoute, { RouteAccess } from "@features/auth/ProtectedRoute";
 
 export const PublicRoute: React.FC<{ children: React.ReactElement }> = ({ children }) => (
     <ProtectedRoute access={RouteAccess.Public}>{children}</ProtectedRoute>

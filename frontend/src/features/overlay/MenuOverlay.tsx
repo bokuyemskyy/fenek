@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { X, ArrowLeft, User, Settings, Globe, LogOut } from "lucide-react";
-import Avatar from "../components/Avatar";
-import { useOverlay } from "../contexts/OverlayContext";
+import Avatar from "@components/Avatar";
+import { useOverlay } from "./OverlayContext";
 
 type MenuSection = "main" | "profile" | "settings" | "language";
 

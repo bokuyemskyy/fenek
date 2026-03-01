@@ -1,6 +1,6 @@
 import { useEffect } from "react";
-import { OVERLAY_COMPONENTS } from "../types/overlay";
-import { useOverlay } from "../contexts/OverlayContext";
+import { OVERLAY_COMPONENTS } from "./overlay";
+import { useOverlay } from "./OverlayContext";
 
 export function RootOverlay() {
     const { overlay, close } = useOverlay();
@@ -21,12 +21,10 @@ export function RootOverlay() {
     if (!isPopup) {
         return (
             <div className="relative z-50">
-                {/* Dark Backdrop */}
                 <div
                     className="fixed inset-0 bg-black/50 backdrop-blur-sm"
                     onClick={close}
                 />
-                {/* Centered Content */}
                 <div className="fixed inset-0 flex items-center justify-center pointer-events-none">
                     <div className="pointer-events-auto">
                         <Component {...overlay.props} />
@@ -38,10 +36,8 @@ export function RootOverlay() {
 
     return (
         <div className="relative z-50">
-            {/* Transparent Backdrop for 'Click Outside' */}
             <div className="fixed inset-0" onClick={close} />
 
-            {/* Positioned Content */}
             <PopupPositioner anchor={overlay.anchor!} >
                 <Component {...overlay.props} />
             </PopupPositioner>

@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { siGithub, siGoogle } from 'simple-icons';
-import Fenek from "../assets/fenek.svg";
+import Fenek from "@assets/fenek.svg";
 
 function GoogleIcon() {
     return (
