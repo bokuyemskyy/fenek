@@ -1,5 +1,7 @@
 # fenek
 
+> This project is currently under development. Many features are incomplete.
+
 ## Overview
 
 A microservices-based real-time messenger. Built to handle scaling asynchronous message delivery, and secure third-party authentication.
