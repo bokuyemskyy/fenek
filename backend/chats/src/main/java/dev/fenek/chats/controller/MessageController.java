@@ -1,19 +1,17 @@
 package dev.fenek.chats.controller;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import dev.fenek.chats.auth.JwtUserPrincipal;
-import dev.fenek.chats.dto.CreateMessageRequest;
-import dev.fenek.chats.dto.EditMessageRequest;
+import dev.fenek.chats.dto.MessageCreateRequest;
+import dev.fenek.chats.dto.MessageUpdateRequest;
 import dev.fenek.chats.dto.MessageResponse;
 import dev.fenek.chats.dto.ReactionRequest;
-import dev.fenek.chats.dto.TypingCommand;
 import dev.fenek.chats.model.Message;
 import dev.fenek.chats.service.MessageService;
 import lombok.RequiredArgsConstructor;
@@ -22,14 +20,13 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/messages")
 @RequiredArgsConstructor
 public class MessageController {
-
         private final MessageService messageService;
 
         @PostMapping
         @ResponseStatus(HttpStatus.CREATED)
         public MessageResponse send(
                         @AuthenticationPrincipal JwtUserPrincipal principal,
-                        @RequestBody CreateMessageRequest request) {
+                        @RequestBody MessageCreateRequest request) {
 
                 Message message = messageService.create(
                                 principal.getUserId(),
@@ -44,9 +41,9 @@ public class MessageController {
         public MessageResponse update(
                         @AuthenticationPrincipal JwtUserPrincipal principal,
                         @PathVariable UUID id,
-                        @RequestBody EditMessageRequest request) {
+                        @RequestBody MessageUpdateRequest request) {
 
-                Message updated = messageService.update(id, principal.getUserId(), request.content());
+                Message updated = messageService.update(principal.getUserId(), id, request.content());
 
                 return MessageResponse.of(updated);
         }
@@ -57,7 +54,7 @@ public class MessageController {
                         @AuthenticationPrincipal JwtUserPrincipal principal,
                         @PathVariable UUID id) {
 
-                messageService.delete(id, principal.getUserId());
+                messageService.delete(principal.getUserId(), id);
 
         }
 
@@ -76,15 +73,5 @@ public class MessageController {
                         @AuthenticationPrincipal JwtUserPrincipal principal) {
 
                 messageService.unreact(id, principal.getUserId());
-        }
-
-        @MessageMapping("/typing")
-        public void typing(@AuthenticationPrincipal JwtUserPrincipal principal,
-                        @Payload TypingCommand command) {
-
-                if (command.typing())
-                        messageService.startTyping(principal.getUserId(), command.chatId());
-                else
-                        messageService.stopTyping(principal.getUserId(), command.chatId());
         }
 }

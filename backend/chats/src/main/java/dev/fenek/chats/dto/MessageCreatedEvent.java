@@ -7,18 +7,18 @@ import dev.fenek.chats.model.Message;
 
 public record MessageCreatedEvent(
         UUID messageId,
+        UUID userId,
         UUID chatId,
-        UUID senderId,
         String content,
         Instant createdAt,
         Instant editedAt,
-        UUID replyToId) {
+        UUID replyToId) implements ChatEvent {
 
     public static MessageCreatedEvent from(Message message) {
         return new MessageCreatedEvent(
                 message.getId(),
-                message.getChat().getId(),
                 message.getSenderId(),
+                message.getChat().getId(),
                 message.getContent(),
                 message.getCreatedAt(),
                 message.getEditedAt(),

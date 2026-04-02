@@ -1,11 +1,13 @@
 package dev.fenek.chats.repository;
 
 import dev.fenek.chats.model.Message;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -25,5 +27,11 @@ public interface MessageRepository extends JpaRepository<Message, UUID> {
                   )
             """)
     List<Message> findLastMessagesForChats(@Param("chatIds") List<UUID> chatIds);
+
+    List<Message> findTop50ByChatIdOrderByCreatedAtDesc(UUID chatId);
+
+    List<Message> findTop50ByChatIdAndCreatedAtBeforeOrderByCreatedAtDesc(
+            UUID chatId,
+            Instant before);
 
 }

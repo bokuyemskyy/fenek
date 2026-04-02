@@ -1,27 +1,52 @@
+import type { User } from "@features/user/user";
+
 export type ChatType = 'PRIVATE' | 'GROUP' | 'CHANNEL' | 'SAVED';
 
-export interface ChatResponse {
+export interface Chat {
     id: string;
     type: ChatType;
-
-    // Optional because of JsonInclude.Include.NON_NULL in Java
+    // PRIVATE only
     otherUserId?: string;
+    // GROUP only
     title?: string;
     description?: string;
     imageUrl?: string;
-
+    // Common
     lastMessageSnippet?: string;
     lastMessageTimestamp?: string;
     createdAt: string;
 }
 
-export interface Chat {
-    id: string;
-    type: ChatType;
+export interface ChatDisplayInfo {
     title: string;
-    description?: string;
-    imageUrl?: string;
-    lastMessage: string;
-    timestamp?: string;
-    otherUserId?: string;
+    avatarUrl?: string;
+    color?: string;
+}
+
+export function getChatDisplayInfo(
+    chat: Chat,
+    registry: Record<string, User>
+): ChatDisplayInfo {
+    if (chat.type === "PRIVATE" && chat.otherUserId) {
+        const user = registry[chat.otherUserId];
+        return {
+            title: user?.displayName ?? "Unknown",
+            avatarUrl: user?.avatarUrl,
+            color: user?.color,
+        };
+    }
+
+    if (chat.type === "SAVED") {
+        return {
+            title: "Saved messages",
+            avatarUrl: undefined,
+            color: undefined,
+        };
+    }
+
+    return {
+        title: chat.title ?? "Untitled",
+        avatarUrl: chat.imageUrl,
+        color: undefined,
+    };
 }

@@ -1,33 +1,16 @@
 import { Bookmark } from "lucide-react";
-import type { Chat } from "./chat";
 import Avatar from "@components/Avatar";
 import { formatTimeAgo } from "./date";
-import { useUser } from "@features/user/UserContext";
+import type { Chat, ChatDisplayInfo } from "./chat";
 
 interface ChatItemProps {
     chat: Chat;
+    displayInfo: ChatDisplayInfo;
     isActive: boolean;
     onClick: () => void;
 }
-
-export function ChatItem({ chat, isActive, onClick }: ChatItemProps) {
-    const targetUserId = chat.type === 'PRIVATE' ? chat.otherUserId : undefined;
-
-    const user = useUser(targetUserId);
-
-    let displayTitle = chat.title;
-    let displayAvatar = chat.imageUrl;
-    let displayColor = undefined;
-
-    if (chat.type === 'PRIVATE') {
-        if (user) {
-            displayTitle = user.displayName;
-            displayAvatar = user.avatarUrl;
-            displayColor = user.color;
-        } else {
-            displayTitle = "Loading...";
-        }
-    }
+export function ChatItem({ chat, displayInfo, isActive, onClick }: ChatItemProps) {
+    const { title, avatarUrl, color } = displayInfo;
 
     const renderAvatar = () => {
         if (chat.type === "SAVED") {
@@ -38,39 +21,31 @@ export function ChatItem({ chat, isActive, onClick }: ChatItemProps) {
             );
         }
 
-        return (
-            <Avatar
-                avatarUrl={displayAvatar}
-                displayName={displayTitle}
-                color={displayColor}
-            />
-        );
+        return <Avatar avatarUrl={avatarUrl} displayName={title} color={color} />;
     };
 
     return (
         <div
             onClick={onClick}
             className={`px-4 py-3 cursor-pointer transition-colors border-b border-white/5 
-        ${isActive ? "bg-orange-500/10 border-l-2 border-l-orange-500" : "hover:bg-white/5 border-l-2 border-l-transparent"}`}
+                ${isActive ? "bg-orange-500/10 border-l-2 border-l-orange-500" : "hover:bg-white/5 border-l-2 border-l-transparent"}`}
         >
             <div className="flex items-center gap-3">
-                <div className="w-12 h-12 flex-shrink-0">
-                    {renderAvatar()}
-                </div>
+                <div className="w-12 h-12 flex-shrink-0">{renderAvatar()}</div>
 
                 <div className="flex-1 min-w-0 overflow-hidden">
                     <div className="flex items-center justify-between mb-0.5">
-                        <h3 className={`font-medium text-sm truncate pr-2 ${!user && chat.type === 'PRIVATE' ? 'text-white/30 animate-pulse' : 'text-white'}`}>
-                            {displayTitle}
+                        <h3 className="font-medium text-sm truncate pr-2 text-white">
+                            {title}
                         </h3>
                         <span className="text-[11px] text-white/40 flex-shrink-0">
-                            {formatTimeAgo(chat.timestamp)}
+                            {formatTimeAgo(chat.lastMessageTimestamp)}
                         </span>
                     </div>
 
                     <div className="flex items-center gap-2">
                         <p className="text-sm text-white/50 truncate flex-1">
-                            {chat.lastMessage}
+                            {chat.lastMessageSnippet}
                         </p>
                     </div>
                 </div>

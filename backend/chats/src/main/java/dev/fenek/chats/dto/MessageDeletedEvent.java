@@ -7,17 +7,17 @@ import dev.fenek.chats.model.Message;
 
 public record MessageDeletedEvent(
         UUID messageId,
+        UUID userId,
         UUID chatId,
-        UUID senderId,
         Instant createdAt,
         Instant editedAt,
-        UUID replyToId) {
+        UUID replyToId) implements ChatEvent {
 
     public static MessageDeletedEvent from(Message message) {
         return new MessageDeletedEvent(
                 message.getId(),
-                message.getChat().getId(),
                 message.getSenderId(),
+                message.getChat().getId(),
                 message.getCreatedAt(),
                 message.getEditedAt(),
                 message.getReplyTo() != null

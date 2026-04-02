@@ -4,57 +4,66 @@ import { ChatItem } from "./ChatItem";
 import Fenek from "@assets/fenek.svg";
 import { useOverlay } from "@features/overlay/OverlayContext";
 import { useUsers } from "@features/user/UserContext";
-import { useChats } from "@features/chat/ChatContext";
 import { ChatContent } from "./ChatContent";
+import { useChatStore } from "./chatStore";
+import { getChatDisplayInfo } from "./chat";
 
 export default function ChatsPage() {
-    const {
-        chats,
-        isLoading,
-        activeChatId,
-        setActiveChatId,
-        reloadChats
-    } = useChats();
+    const fetchChats = useChatStore(state => state.fetchChats);
+    const chats = useChatStore(state => state.chats);
+    const loadingChats = useChatStore(state => state.loadingChats);
+    const selectedChatId = useChatStore(state => state.selectedChatId);
+    const selectChat = useChatStore(state => state.selectChat);
+
     const { registry, requestUsers } = useUsers();
+    const { open } = useOverlay();
 
     const [searchQuery, setSearchQuery] = useState("");
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
+    useEffect(() => {
+        fetchChats();
+    }, []);
 
     useEffect(() => {
         if (chats.length === 0) return;
         const userIds = chats
-            .filter(c => c.type === 'PRIVATE' && c.otherUserId)
+            .filter(c => c.type === "PRIVATE" && c.otherUserId)
             .map(c => c.otherUserId as string);
         requestUsers(userIds);
     }, [chats, requestUsers]);
 
-    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-
-    const { open } = useOverlay();
-
     const filteredChats = useMemo(() => {
-        return chats.filter(chat => {
-            if (chat.type === 'PRIVATE') {
-                const user = registry[chat.otherUserId || ""];
+        return chats
+            .map(chat => ({
+                chat,
+                displayInfo: getChatDisplayInfo(chat, registry)
+            }))
+            .filter(({ chat, displayInfo }) => {
+                const matchesUser = chat.type === "PRIVATE" && chat.otherUserId &&
+                    registry[chat.otherUserId]?.username?.toLowerCase().includes(searchQuery.toLowerCase());
+                const matchesTitle = displayInfo.title.toLowerCase().includes(searchQuery.toLowerCase());
+                return matchesUser || matchesTitle;
+            });
+    }, [chats, registry, searchQuery]);
 
-                if (!user) return false;
+    const selectedChat = useMemo(() => {
+        return chats.find(chat => chat.id === selectedChatId);
+    }, [chats, selectedChatId]);
 
-                return user.displayName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                    user.username?.toLowerCase().includes(searchQuery.toLowerCase());
-            }
-            return chat.title.toLowerCase().includes(searchQuery.toLowerCase());
-        });
-    }, [chats, searchQuery, registry]);
+    const selectedChatDisplayInfo = useMemo(() => {
+        return selectedChat ? getChatDisplayInfo(selectedChat, registry) : null;
+    }, [selectedChat, registry]);
 
     return (
         <div className="flex h-screen bg-black text-white overflow-hidden">
             {/* Left Sidebar */}
             <div
                 className={`flex flex-col border-r border-white/10 transition-all duration-300 ease-in-out
-                ${isSidebarCollapsed ? 'w-20' : 'w-80'}`}
+                ${isSidebarCollapsed ? "w-20" : "w-80"}`}
             >
                 {/* Header */}
                 <div className="h-16 px-4 flex items-center gap-3 border-b border-white/10 bg-black/50 backdrop-blur-xl flex-shrink-0">
-
                     <button
                         className="p-2 ml-1.5 mr-1.5 hover:bg-white/5 rounded-lg transition-colors text-white/70 hover:text-white"
                         onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
@@ -62,16 +71,19 @@ export default function ChatsPage() {
                         <Menu className="w-5 h-5" />
                     </button>
 
-                    <div className={`flex items-center gap-2 transition-opacity duration-200 overflow-hidden
-                        ${isSidebarCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'}`}>
+                    <div
+                        className={`flex items-center gap-2 transition-opacity duration-200 overflow-hidden
+                        ${isSidebarCollapsed ? "opacity-0 w-0" : "opacity-100 w-auto"}`}
+                    >
                         <img src={Fenek} alt="Fenek Logo" className="h-6" />
                         <span className="text-lg font-medium tracking-tight">fenek</span>
                     </div>
 
-
                     <div className="ml-auto flex items-center gap-1">
-                        <button className="p-2 hover:bg-white/5 rounded-lg transition-colors text-white/70 hover:text-white"
-                            onClick={() => open("menu")}>
+                        <button
+                            className="p-2 hover:bg-white/5 rounded-lg transition-colors text-white/70 hover:text-white"
+                            onClick={() => open("menu")}
+                        >
                             <Settings className="w-5 h-5" />
                         </button>
                         <button
@@ -85,18 +97,19 @@ export default function ChatsPage() {
 
                 {/* Chat List */}
                 <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 hover:scrollbar-thumb-white/20">
-                    {isLoading ? (
+                    {loadingChats ? (
                         <div className="flex flex-col items-center justify-center h-40 gap-3 text-white/40">
                             <Loader2 className="w-6 h-6 animate-spin" />
                             {!isSidebarCollapsed && <span className="text-sm">Loading chats...</span>}
                         </div>
                     ) : (
-                        filteredChats.map(chat => (
+                        filteredChats.map(({ chat, displayInfo }) => (
                             <ChatItem
                                 key={chat.id}
                                 chat={chat}
-                                isActive={activeChatId === chat.id}
-                                onClick={() => setActiveChatId(chat.id)}
+                                displayInfo={displayInfo}
+                                isActive={selectedChatId === chat.id}
+                                onClick={() => selectChat(chat.id)}
                             />
                         ))
                     )}
@@ -123,8 +136,8 @@ export default function ChatsPage() {
 
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col bg-black relative">
-                {activeChatId ? (
-                    <ChatContent chatId={activeChatId} />
+                {selectedChat && selectedChatDisplayInfo ? (
+                    <ChatContent displayInfo={selectedChatDisplayInfo} />
                 ) : (
                     <div className="flex-1 flex flex-col items-center justify-center text-white/30 gap-4">
                         <h2 className="text-lg font-medium">Select a chat to start messaging</h2>

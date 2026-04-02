@@ -4,7 +4,9 @@ import java.time.Instant;
 import java.util.UUID;
 
 import dev.fenek.chats.model.Message;
+import lombok.Builder;
 
+@Builder
 public record MessageResponse(
                 UUID id,
                 UUID senderId,

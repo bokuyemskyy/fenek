@@ -1,22 +1,22 @@
 package dev.fenek.chats.service;
 
 import java.time.Instant;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
-import dev.fenek.chats.config.ChatEventsConfig;
-import dev.fenek.chats.config.ChatRoutingKeys;
 import dev.fenek.chats.config.EventConfig;
 import dev.fenek.chats.config.EventConfig.RoutingKeys;
 import dev.fenek.chats.dto.MessageCreatedEvent;
 import dev.fenek.chats.dto.MessageDeletedEvent;
+import dev.fenek.chats.dto.MessagePageResponse;
+import dev.fenek.chats.dto.MessageResponse;
 import dev.fenek.chats.dto.MessageUpdatedEvent;
 import dev.fenek.chats.dto.ReactionCreatedEvent;
 import dev.fenek.chats.dto.ReactionDeletedEvent;
-import dev.fenek.chats.dto.TypingStartedEvent;
-import dev.fenek.chats.dto.TypingStoppedEvent;
 import dev.fenek.chats.exception.ChatNotFoundException;
 import dev.fenek.chats.exception.MessageNotFoundException;
 import dev.fenek.chats.exception.NotAllowedToModifyMessageException;
@@ -36,47 +36,6 @@ public class MessageService {
     private final ChatRepository chatRepository;
     private final ChatService chatService;
     private final RabbitTemplate rabbitTemplate;
-
-    public Message delete(UUID id, UUID userId) {
-        Message message = messageRepository.findById(id)
-                .orElseThrow(() -> new MessageNotFoundException());
-        if (!message.getSenderId().equals(userId)) {
-            throw new NotAllowedToModifyMessageException();
-        }
-        if (!chatService.isMember(userId, message.getChat().getId())) {
-            throw new ChatNotFoundException();
-        }
-
-        message.setDeletedAt(Instant.now());
-
-        messageRepository.save(message);
-
-        rabbitTemplate.convertAndSend(EventConfig.EXCHANGE, RoutingKeys.MESSAGE_DELETED,
-                MessageDeletedEvent.from(message));
-
-        return message;
-    }
-
-    public Message update(UUID id, UUID userId, String content) {
-        Message message = messageRepository.findById(id)
-                .orElseThrow(() -> new MessageNotFoundException());
-
-        if (!message.getSenderId().equals(userId)) {
-            throw new NotAllowedToModifyMessageException();
-        }
-        if (!chatService.isMember(userId, message.getChat().getId())) {
-            throw new ChatNotFoundException();
-        }
-
-        message.setContent(content);
-
-        messageRepository.save(message);
-
-        rabbitTemplate.convertAndSend(EventConfig.EXCHANGE, RoutingKeys.MESSAGE_UPDATED,
-                MessageUpdatedEvent.from(message));
-
-        return message;
-    }
 
     public Message create(UUID userId, UUID chatId, String content, UUID replyToId) {
         if (!chatService.isMember(userId, chatId)) {
@@ -107,6 +66,47 @@ public class MessageService {
         return message;
     }
 
+    public Message update(UUID userId, UUID id, String content) {
+        Message message = messageRepository.findById(id)
+                .orElseThrow(() -> new MessageNotFoundException());
+
+        if (!message.getSenderId().equals(userId)) {
+            throw new NotAllowedToModifyMessageException();
+        }
+        if (!chatService.isMember(userId, message.getChat().getId())) {
+            throw new ChatNotFoundException();
+        }
+
+        message.setContent(content);
+
+        messageRepository.save(message);
+
+        rabbitTemplate.convertAndSend(EventConfig.EXCHANGE, RoutingKeys.MESSAGE_UPDATED,
+                MessageUpdatedEvent.from(message));
+
+        return message;
+    }
+
+    public Message delete(UUID userId, UUID id) {
+        Message message = messageRepository.findById(id)
+                .orElseThrow(() -> new MessageNotFoundException());
+        if (!message.getSenderId().equals(userId)) {
+            throw new NotAllowedToModifyMessageException();
+        }
+        if (!chatService.isMember(userId, message.getChat().getId())) {
+            throw new ChatNotFoundException();
+        }
+
+        message.setDeletedAt(Instant.now());
+
+        messageRepository.save(message);
+
+        rabbitTemplate.convertAndSend(EventConfig.EXCHANGE, RoutingKeys.MESSAGE_DELETED,
+                MessageDeletedEvent.from(message));
+
+        return message;
+    }
+
     public void react(UUID id, UUID userId, String emoji) {
         Message message = messageRepository.findById(id)
                 .orElseThrow(() -> new MessageNotFoundException());
@@ -118,7 +118,7 @@ public class MessageService {
 
         if (deleted > 0) {
             rabbitTemplate.convertAndSend(EventConfig.EXCHANGE, RoutingKeys.REACTION_DELETED,
-                    ReactionDeletedEvent.of(id, userId));
+                    ReactionDeletedEvent.of(id, userId, message.getChat().getId()));
         }
 
         MessageReaction reaction = MessageReaction.builder()
@@ -144,25 +144,37 @@ public class MessageService {
 
         if (deleted > 0) {
             rabbitTemplate.convertAndSend(EventConfig.EXCHANGE, RoutingKeys.REACTION_DELETED,
-                    ReactionDeletedEvent.of(id, userId));
+                    ReactionDeletedEvent.of(id, userId, message.getChat().getId()));
         }
     }
 
-    public void startTyping(UUID userId, UUID chatId) {
+    public MessagePageResponse getMessages(UUID userId, UUID chatId, Instant before) {
         if (!chatService.isMember(userId, chatId)) {
             throw new ChatNotFoundException();
         }
 
-        rabbitTemplate.convertAndSend(EventConfig.REALTIME_EXCHANGE, RoutingKeys.TYPING_STARTED,
-                new TypingStartedEvent(chatId, userId));
-    }
+        List<Message> messages;
 
-    public void stopTyping(UUID userId, UUID chatId) {
-        if (!chatService.isMember(userId, chatId)) {
-            throw new ChatNotFoundException();
+        if (before == null) {
+            messages = messageRepository
+                    .findTop50ByChatIdOrderByCreatedAtDesc(chatId);
+        } else {
+            messages = messageRepository
+                    .findTop50ByChatIdAndCreatedAtBeforeOrderByCreatedAtDesc(chatId, before);
         }
 
-        rabbitTemplate.convertAndSend(EventConfig.REALTIME_EXCHANGE, RoutingKeys.TYPING_STOPPED,
-                new TypingStoppedEvent(chatId, userId));
+        Collections.reverse(messages);
+
+        List<MessageResponse> response = messages.stream()
+                .map(MessageResponse::of)
+                .toList();
+
+        Long nextCursor = messages.isEmpty()
+                ? null
+                : messages.get(messages.size() - 1)
+                        .getCreatedAt()
+                        .toEpochMilli();
+
+        return new MessagePageResponse(response, nextCursor);
     }
 }

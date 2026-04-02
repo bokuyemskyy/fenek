@@ -73,5 +73,9 @@ public class EventConfig {
         public static final String TYPING_STARTED = "realtime.typing.started";
 
         public static final String TYPING_STOPPED = "realtime.typing.stopped";
+
+        public static final String ONLINE = "realtime.online";
+
+        public static final String OFFLINE = "realtime.offline";
     }
 }
