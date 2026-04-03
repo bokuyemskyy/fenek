@@ -6,7 +6,7 @@ import org.springframework.amqp.core.TopicExchange;
 
 @Configuration
 public class UserEventsConfig {
-    public static final String EXCHANGE = "users.events";
+    public static final String EXCHANGE = "users.exchange";
 
     @Bean
     TopicExchange userEventsExchange() {

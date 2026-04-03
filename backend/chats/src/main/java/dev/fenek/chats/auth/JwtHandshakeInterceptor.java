@@ -45,7 +45,7 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
             context.setAuthentication(authentication);
 
             attributes.put("SPRING_SECURITY_CONTEXT", context);
-
+            attributes.put("uid", userId);
             return true;
         }
 

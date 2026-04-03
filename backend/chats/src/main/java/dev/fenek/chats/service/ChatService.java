@@ -7,7 +7,6 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,13 +17,8 @@ import dev.fenek.chats.repository.ChatMemberRepository;
 import dev.fenek.chats.repository.ChatRepository;
 import dev.fenek.chats.repository.MessageRepository;
 import lombok.RequiredArgsConstructor;
-import dev.fenek.chats.config.EventConfig;
-import dev.fenek.chats.config.EventConfig.RoutingKeys;
 import dev.fenek.chats.dto.ChatResponse;
-import dev.fenek.chats.dto.TypingStartedEvent;
-import dev.fenek.chats.dto.OnlineEvent;
 import dev.fenek.chats.exception.CannotChatWithYourselfException;
-import dev.fenek.chats.exception.ChatNotFoundException;
 import dev.fenek.chats.exception.PrivateChatAlreadyExistsException;
 import dev.fenek.chats.exception.SavedChatAlreadyExistsException;
 
@@ -34,25 +28,6 @@ public class ChatService {
         private final ChatRepository chatRepository;
         private final ChatMemberRepository chatMemberRepository;
         private final MessageRepository messageRepository;
-        private final RabbitTemplate rabbitTemplate;
-
-        public void typing(UUID userId, UUID chatId) {
-                if (!isMember(userId, chatId)) {
-                        throw new ChatNotFoundException();
-                }
-
-                rabbitTemplate.convertAndSend(EventConfig.REALTIME_EXCHANGE, RoutingKeys.TYPING_STARTED,
-                                new TypingStartedEvent(userId, chatId));
-        }
-
-        public void online(UUID userId) {
-                List<ChatMember> chatMembers = chatMemberRepository.findByUserId(userId);
-
-                chatMembers.stream()
-                                .forEach(cm -> rabbitTemplate.convertAndSend(EventConfig.REALTIME_EXCHANGE,
-                                                RoutingKeys.ONLINE,
-                                                new OnlineEvent(userId, cm.getChat().getId())));
-        }
 
         public List<UUID> getOtherMemberIds(UUID userId, UUID chatId) {
                 return chatMemberRepository.findOtherMembers(List.of(chatId), userId)
@@ -142,7 +117,15 @@ public class ChatService {
                                 .createdAt(chat.getCreatedAt()).build();
         }
 
-        public List<ChatResponse> getChats(UUID userId) {
+        public List<Chat> getUserChats(UUID userId) {
+                return chatMemberRepository.findByUserId(userId).stream().map(cm -> cm.getChat()).toList();
+        }
+
+        public List<UUID> getUserChatIds(UUID userId) {
+                return chatMemberRepository.findByUserId(userId).stream().map(cm -> cm.getChat().getId()).toList();
+        }
+
+        public List<ChatResponse> getChatsResponse(UUID userId) {
                 List<ChatMember> chatMembers = chatMemberRepository.findByUserId(userId);
 
                 List<UUID> chatIds = chatMembers.stream()

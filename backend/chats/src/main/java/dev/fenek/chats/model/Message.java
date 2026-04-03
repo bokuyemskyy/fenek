@@ -35,7 +35,7 @@ public class Message {
     @Column(nullable = false, updatable = false)
     private UUID senderId;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
     @Column(nullable = false, updatable = false)

@@ -60,7 +60,7 @@ public class MessageService {
 
         messageRepository.save(message);
 
-        rabbitTemplate.convertAndSend(EventConfig.EXCHANGE, RoutingKeys.MESSAGE_CREATED,
+        rabbitTemplate.convertAndSend(EventConfig.CHATS_EXCHANGE, RoutingKeys.MESSAGE_CREATED,
                 MessageCreatedEvent.from(message));
 
         return message;
@@ -81,7 +81,7 @@ public class MessageService {
 
         messageRepository.save(message);
 
-        rabbitTemplate.convertAndSend(EventConfig.EXCHANGE, RoutingKeys.MESSAGE_UPDATED,
+        rabbitTemplate.convertAndSend(EventConfig.CHATS_EXCHANGE, RoutingKeys.MESSAGE_UPDATED,
                 MessageUpdatedEvent.from(message));
 
         return message;
@@ -101,7 +101,7 @@ public class MessageService {
 
         messageRepository.save(message);
 
-        rabbitTemplate.convertAndSend(EventConfig.EXCHANGE, RoutingKeys.MESSAGE_DELETED,
+        rabbitTemplate.convertAndSend(EventConfig.CHATS_EXCHANGE, RoutingKeys.MESSAGE_DELETED,
                 MessageDeletedEvent.from(message));
 
         return message;
@@ -117,7 +117,7 @@ public class MessageService {
         int deleted = messageReactionRepository.deleteByMessageIdAndUserId(id, userId);
 
         if (deleted > 0) {
-            rabbitTemplate.convertAndSend(EventConfig.EXCHANGE, RoutingKeys.REACTION_DELETED,
+            rabbitTemplate.convertAndSend(EventConfig.CHATS_EXCHANGE, RoutingKeys.REACTION_DELETED,
                     ReactionDeletedEvent.of(id, userId, message.getChat().getId()));
         }
 
@@ -129,7 +129,7 @@ public class MessageService {
 
         messageReactionRepository.save(reaction);
 
-        rabbitTemplate.convertAndSend(EventConfig.EXCHANGE, RoutingKeys.REACTION_CREATED,
+        rabbitTemplate.convertAndSend(EventConfig.CHATS_EXCHANGE, RoutingKeys.REACTION_CREATED,
                 ReactionCreatedEvent.from(reaction));
     }
 
@@ -143,7 +143,7 @@ public class MessageService {
         int deleted = messageReactionRepository.deleteByMessageIdAndUserId(id, userId);
 
         if (deleted > 0) {
-            rabbitTemplate.convertAndSend(EventConfig.EXCHANGE, RoutingKeys.REACTION_DELETED,
+            rabbitTemplate.convertAndSend(EventConfig.CHATS_EXCHANGE, RoutingKeys.REACTION_DELETED,
                     ReactionDeletedEvent.of(id, userId, message.getChat().getId()));
         }
     }

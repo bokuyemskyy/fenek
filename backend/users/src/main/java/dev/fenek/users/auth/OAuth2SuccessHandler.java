@@ -24,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
-        private final UserService oAuthUserService;
+        private final UserService userService;
 
         private final JwtService jwtService;
         private final RefreshTokenService refreshTokenService;
@@ -46,7 +46,9 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
                 Provider provider = Provider.valueOf(registrationId.toUpperCase());
                 OAuth2UserInfo userInfo = OAuth2UserInfoFactory.from(provider, oAuth2User);
 
-                User user = oAuthUserService.findOrCreateUser(provider, userInfo);
+                User user = userService.findOrCreateUser(provider, userInfo);
+
+                userService.updateLoginTimestamps(user.getId());
 
                 String accessToken = jwtService.createToken(user);
                 String refreshToken = refreshTokenService.createToken(user);

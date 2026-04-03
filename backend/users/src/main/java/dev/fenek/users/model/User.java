@@ -54,6 +54,9 @@ public class User {
     private Instant createdAt;
 
     @Column(nullable = false)
+    private Instant lastSeenAt;
+
+    @Column(nullable = false)
     private Instant lastLoginAt;
 
     @PrePersist
@@ -61,13 +64,9 @@ public class User {
         Instant now = Instant.now();
         this.createdAt = now;
         this.lastLoginAt = now;
+        this.lastSeenAt = now;
         this.color = "#f97316";
         this.isComplete = false;
-    }
-
-    @PreUpdate
-    void onUpdate() {
-        this.lastLoginAt = Instant.now();
     }
 
     public enum Provider {

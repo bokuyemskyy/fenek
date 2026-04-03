@@ -12,6 +12,7 @@ import dev.fenek.users.dto.UserBatchRequest;
 import dev.fenek.users.dto.UserBatchResponse;
 import dev.fenek.users.dto.UserMeResponse;
 import dev.fenek.users.dto.UserResponse;
+import dev.fenek.users.dto.UserUpdateRequest;
 import dev.fenek.users.model.User;
 import dev.fenek.users.service.FileStorageService;
 import dev.fenek.users.service.UserService;
@@ -50,14 +51,12 @@ public class UserController {
 
     @PatchMapping(value = "/me", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> updateProfile(
-            @RequestParam(required = false) String username,
-            @RequestParam(required = false) String displayName,
-            @RequestParam(required = false) String color,
-            @RequestParam(required = false) Boolean removeAvatar,
+            @ModelAttribute UserUpdateRequest request,
             @RequestPart(required = false) MultipartFile avatarFile,
             @AuthenticationPrincipal User user) {
         try {
-            userService.updateUser(user.getId(), username, displayName, color, removeAvatar, avatarFile);
+            userService.updateUser(user.getId(), request.username(), request.displayName(), request.color(),
+                    request.removeAvatar(), avatarFile);
         } catch (java.io.IOException e) {
             return ResponseEntity.status(500).body("Error updating user profile");
         }

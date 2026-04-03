@@ -4,8 +4,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,7 +17,6 @@ import dev.fenek.chats.auth.JwtUserPrincipal;
 import dev.fenek.chats.dto.ChatResponse;
 import dev.fenek.chats.dto.CreatePrivateChatRequest;
 import dev.fenek.chats.dto.MessagePageResponse;
-import dev.fenek.chats.dto.TypingCommand;
 import dev.fenek.chats.service.ChatService;
 import dev.fenek.chats.service.MessageService;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +30,7 @@ public class ChatController {
 
     @GetMapping
     public List<ChatResponse> getChats(@AuthenticationPrincipal JwtUserPrincipal principal) {
-        return chatService.getChats(principal.getUserId());
+        return chatService.getChatsResponse(principal.getUserId());
     }
 
     @PostMapping("/private")
@@ -51,16 +48,5 @@ public class ChatController {
                 principal.getUserId(),
                 chatId,
                 before != null ? Instant.ofEpochMilli(before) : null);
-    }
-
-    @MessageMapping("/typing")
-    public void typing(@AuthenticationPrincipal JwtUserPrincipal principal,
-            @Payload TypingCommand command) {
-        chatService.typing(principal.getUserId(), command.chatId());
-    }
-
-    @MessageMapping("/online")
-    public void online(@AuthenticationPrincipal JwtUserPrincipal principal) {
-        chatService.online(principal.getUserId());
     }
 }
