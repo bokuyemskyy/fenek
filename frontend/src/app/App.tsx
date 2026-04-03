@@ -5,7 +5,7 @@ import SetupPage from "@features/auth/SetupPage";
 import LandingPage from "@pages/LandingPage";
 
 import { AuthProvider } from "@features/auth/AuthContext";
-import { AuthenticatedRoute, GuestRoute, IncompleteProfileRoute, PublicRoute } from "./Routes";
+import { AuthenticatedRoute, CompleteProfileRoute, GuestRoute, IncompleteProfileRoute, PublicRoute } from "./Routes";
 import AppShell from "./AppShell";
 
 export default function App() {
@@ -19,9 +19,9 @@ export default function App() {
                     <Route
                         path="/*"
                         element={
-                            <AuthenticatedRoute>
+                            <CompleteProfileRoute>
                                 <AppShell />
-                            </AuthenticatedRoute>
+                            </CompleteProfileRoute>
                         }
                     />
                 </Routes>

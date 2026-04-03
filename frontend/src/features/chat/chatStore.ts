@@ -7,14 +7,8 @@ import {
 } from '@features/chat/messageService';
 import type { Chat } from '@features/chat/chat';
 import type { Message, MessagePageResponse } from '@features/chat/message';
-import type {
-    MessageUpdatedEvent,
-    MessageDeletedEvent,
-    ReactionCreatedEvent,
-    ReactionDeletedEvent,
-    TypingStartedEvent,
-    TypingStoppedEvent,
-} from '../websocket/ws';
+import type { MessageCreatedEvent, MessageDeletedEvent, MessageUpdatedEvent, PresenceEvent, ReactionCreatedEvent, ReactionDeletedEvent, TypingEvent } from '@features/websocket/ws';
+import { useUserStore } from '@features/user/userStore';
 
 export interface Reaction {
     messageId: string;
@@ -43,13 +37,12 @@ interface ChatState {
     setMessages: (messages: Message[]) => void;
     prependMessages: (messages: Message[]) => void;
 
-    onMessageCreated: (event: MessageUpdatedEvent) => void;
+    onMessageCreated: (event: MessageCreatedEvent) => void;
     onMessageUpdated: (event: MessageUpdatedEvent) => void;
     onMessageDeleted: (event: MessageDeletedEvent) => void;
     onReactionCreated: (event: ReactionCreatedEvent) => void;
     onReactionDeleted: (event: ReactionDeletedEvent) => void;
-    onTypingStarted: (event: TypingStartedEvent) => void;
-    onTypingStopped: (event: TypingStoppedEvent) => void;
+    onTyping: (event: TypingEvent) => void;
 
     _appendMessage: (message: Message) => void;
     _removeMessage: (messageId: string) => void;
@@ -62,6 +55,8 @@ interface ChatState {
     fetchChats: () => Promise<void>;
     fetchMessages: (chatId: string) => Promise<void>;
     loadMoreMessages: (chatId: string) => Promise<void>;
+    selectChatAndLoad: (chatId: string) => Promise<void>;
+    syncUserRegistry: () => void;
 }
 
 export const useChatStore = create<ChatState>()(
@@ -166,17 +161,11 @@ export const useChatStore = create<ChatState>()(
                 .filter((r) => r.userId !== event.userId);
         }),
 
-        onTypingStarted: (event) => set((s) => {
+        onTyping: (event) => set((s) => {
             if (event.chatId !== s.selectedChatId) return;
             if (!s.typingUserIds.includes(event.userId))
                 s.typingUserIds.push(event.userId);
         }),
-
-        onTypingStopped: (event) => set((s) => {
-            if (event.chatId !== s.selectedChatId) return;
-            s.typingUserIds = s.typingUserIds.filter((id) => id !== event.userId);
-        }),
-
 
         sendMessage: async (chatId, content, replyToId) => {
             try {
@@ -215,6 +204,7 @@ export const useChatStore = create<ChatState>()(
                 if (!res.ok) throw new Error(await res.text());
                 const chats: Chat[] = await res.json();
                 get().setChats(chats);
+                get().syncUserRegistry();
             } finally {
                 set((s) => { s.loadingChats = false; });
             }
@@ -267,16 +257,30 @@ export const useChatStore = create<ChatState>()(
             }
         },
 
+        selectChatAndLoad: async (chatId: string) => {
+            const { selectedChatId, fetchMessages } = get();
+
+            if (selectedChatId === chatId) return;
+
+            set((s) => {
+                s.selectedChatId = chatId;
+                s.messages = [];
+                s.hasMoreMessages = true;
+                s.nextCursor = null;
+            });
+
+            await fetchMessages(chatId);
+        },
+
+        syncUserRegistry: () => {
+            const { chats } = get();
+            const userIds = chats
+                .filter(c => c.type === "PRIVATE" && c.otherUserId)
+                .map(c => c.otherUserId as string);
+
+            if (userIds.length > 0) {
+                useUserStore.getState().requestUsers(userIds);
+            }
+        },
     }))
 );
-
-// const formattedChats: Chat[] = data.map((dto) => ({
-//     id: dto.id,
-//     type: dto.type,
-//     otherUserId: dto.otherUserId,
-//     title: dto.title || (dto.type === 'PRIVATE' ? "Unknown User" : "Untitled Chat"),
-//     description: dto.description,
-//     imageUrl: dto.imageUrl,
-//     lastMessage: dto.lastMessageSnippet || "No messages yet",
-//     timestamp: dto.lastMessageTimestamp,
-// }));

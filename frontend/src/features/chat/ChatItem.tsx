@@ -1,28 +1,15 @@
-import { Bookmark } from "lucide-react";
 import Avatar from "@components/Avatar";
 import { formatTimeAgo } from "./date";
-import type { Chat, ChatDisplayInfo } from "./chat";
+import { useChatDisplayInfo, type Chat } from "./chat";
+
 
 interface ChatItemProps {
     chat: Chat;
-    displayInfo: ChatDisplayInfo;
     isActive: boolean;
     onClick: () => void;
 }
-export function ChatItem({ chat, displayInfo, isActive, onClick }: ChatItemProps) {
-    const { title, avatarUrl, color } = displayInfo;
-
-    const renderAvatar = () => {
-        if (chat.type === "SAVED") {
-            return (
-                <div className="w-full h-full rounded-full bg-orange-500/20 flex items-center justify-center text-orange-500">
-                    <Bookmark className="w-5 h-5" />
-                </div>
-            );
-        }
-
-        return <Avatar avatarUrl={avatarUrl} displayName={title} color={color} />;
-    };
+export function ChatItem({ chat, isActive, onClick }: ChatItemProps) {
+    const { title, avatarProps } = useChatDisplayInfo(chat);
 
     return (
         <div
@@ -31,11 +18,13 @@ export function ChatItem({ chat, displayInfo, isActive, onClick }: ChatItemProps
                 ${isActive ? "bg-orange-500/10 border-l-2 border-l-orange-500" : "hover:bg-white/5 border-l-2 border-l-transparent"}`}
         >
             <div className="flex items-center gap-3">
-                <div className="w-12 h-12 flex-shrink-0">{renderAvatar()}</div>
+                <div className="w-12 h-12 flex-shrink-0">
+                    <Avatar {...avatarProps} />
+                </div>
 
                 <div className="flex-1 min-w-0 overflow-hidden">
                     <div className="flex items-center justify-between mb-0.5">
-                        <h3 className="font-medium text-sm truncate pr-2 text-white">
+                        <h3 className="text-sm truncate pr-2 text-white">
                             {title}
                         </h3>
                         <span className="text-[11px] text-white/40 flex-shrink-0">

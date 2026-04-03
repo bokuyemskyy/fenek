@@ -2,10 +2,10 @@ import { Route, Routes } from "react-router-dom";
 
 import { OverlayProvider } from "@features/overlay/OverlayContext";
 import { RootOverlay } from "@features/overlay/RootOverlay";
-import { UserProvider } from "@features/user/UserContext";
 import ChatsPage from "@features/chat/ChatsPage";
 import { WebSocketProvider } from "@features/websocket/WebSocketContext";
-import { useWsBridge } from "@features/websocket/wsBridge";
+import { useWsBridge } from "@features/websocket/useWsBridge";
+import { enableMapSet } from 'immer';
 
 export default function AppShell() {
 
@@ -14,21 +14,18 @@ export default function AppShell() {
         return null;
     }
 
+    enableMapSet();
+
     return (
-        <UserProvider>
-            <WebSocketProvider>
-                <WsBridge />
-                {/* <UserCacheProvider>
-                <ChatListProvider> 
-                <ChatProvider> */}
-                <OverlayProvider>
-                    <Routes>
-                        <Route path="/chats" element={<ChatsPage />} />
-                    </Routes>
-                    <RootOverlay />
-                </OverlayProvider>
-            </WebSocketProvider>
-        </UserProvider >
+        <WebSocketProvider>
+            <WsBridge />
+            <OverlayProvider>
+                <Routes>
+                    <Route path="/chats" element={<ChatsPage />} />
+                </Routes>
+                <RootOverlay />
+            </OverlayProvider>
+        </WebSocketProvider>
     );
 
 

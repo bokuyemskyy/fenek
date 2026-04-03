@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Zap, Shield, MessageCircle, Users } from "lucide-react";
+import { Zap, Users, UserRound, Brush, KeyRound, Binary, File } from "lucide-react";
 import Fenek from "@assets/fenek.svg";
 import SocialLink from "@components/SocialLink";
 import FeatureCard from "@components/FeatureCard";
@@ -35,9 +35,9 @@ export default function LandingPage() {
                         <h1 className="text-6xl font-medium mb-6 bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">
                             fenek
                         </h1>
-                        <p className="text-xl text-white/60 mb-12 max-w-2xl mx-auto">
+                        <p className="text-lg text-white/60 mb-12 max-w-2xl mx-auto">
                             A simple messenger.
-                            Connect with your world seamlessly.
+                            Connect with your world.
                         </p>
                         <button
                             onClick={() => { isAuthenticated ? navigate("/chats") : navigate("/login") }}
@@ -48,39 +48,62 @@ export default function LandingPage() {
                     </div>
 
                     {/* Features Grid */}
-                    <div className="grid md:grid-cols-2 gap-6 mb-15">
-                        <FeatureCard
-                            icon={<Zap className="w-6 h-6" />}
-                            title="Lightning Fast"
-                            description="Experience instant messaging with optimized performance and real-time delivery."
-                        />
-                        <FeatureCard
-                            icon={<Shield className="w-6 h-6" />}
-                            title="Secure & Private"
-                            description="End-to-end encryption ensures your conversations stay private and protected."
-                        />
-                        <FeatureCard
-                            icon={<Users className="w-6 h-6" />}
-                            title="Group Chats"
-                            description="Create unlimited groups and channels to connect with communities of any size."
-                        />
-                        <FeatureCard
-                            icon={<MessageCircle className="w-6 h-6" />}
-                            title="Rich Media"
-                            description="Share photos, videos, documents, and more with seamless file handling."
-                        />
+                    <div className="mb-16">
+                        <h2 className="text-lg text-white/60 mb-6">Available now</h2>
+                        <div className="grid md:grid-cols-2 gap-6">
+                            <FeatureCard
+                                icon={<Zap className="w-6 h-6" />}
+                                title="Lightning Fast"
+                                description="Instant messaging with optimized performance and real-time delivery."
+                            />
+                            <FeatureCard
+                                icon={<UserRound className="w-6 h-6" />}
+                                title="Private Chats"
+                                description="Find your friends, see when they are online or typing, and chat with them in a private space."
+                            />
+                            <FeatureCard
+                                icon={<Brush className="w-6 h-6" />}
+                                title="Custom Profiles"
+                                description="Personalize your profile by changing your name, avatar, and chat color."
+                            />
+                            <FeatureCard
+                                icon={<KeyRound className="w-6 h-6" />}
+                                title="Secure Authentication"
+                                description="Sign in with Google or GitHub and stay logged in with long-lasting sessions."
+                            />
+                        </div>
+                    </div>
+
+                    {/* Future Features */}
+                    <div className="mb-16 group opacity-70 hover:opacity-100 transition-opacity duration-300">
+                        <h2 className="text-lg text-white/60 mb-6">Planned features</h2>
+                        <div className="grid md:grid-cols-3 gap-6">
+                            <FeatureCard
+                                icon={<Binary className="w-6 h-6" />}
+                                title="Encryption"
+                                description="End-to-end encryption to keep your conversations fully protected."
+                            />
+                            <FeatureCard
+                                icon={<Users className="w-6 h-6" />}
+                                title="Group Chats"
+                                description="Create groups and channels to connect with more people."
+                            />
+                            <FeatureCard
+                                icon={<File className="w-6 h-6" />}
+                                title="Media Sharing"
+                                description="Share photos, videos, and files seamlessly in your chats."
+                            />
+                        </div>
                     </div>
 
                     {/* Social Links */}
                     <div className="text-center">
-                        <h3 className="text-sm uppercase tracking-wider text-white/40 mb-6">
-                            Connect with us
+                        <h3 className="text-lg text-white/60 mb-6">
+                            Connect with me
                         </h3>
                         <div className="flex justify-center gap-6">
-                            <SocialLink href="https://twitter.com" label="Twitter" />
-                            <SocialLink href="https://github.com" label="GitHub" />
-                            <SocialLink href="https://linkedin.com" label="LinkedIn" />
-                            <SocialLink href="https://instagram.com" label="Instagram" />
+                            <SocialLink href="https://github.com/bokuyemskyy/fenek" label="GitHub" />
+                            <SocialLink href="https://www.linkedin.com/in/bokuyemskyy/" label="LinkedIn" />
                         </div>
                     </div>
                 </div>

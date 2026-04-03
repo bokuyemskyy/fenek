@@ -6,8 +6,6 @@ export default function LoadingPage() {
             <div className="relative flex flex-col items-center gap-8 animate-in fade-in duration-700 fill-mode-forwards">
                 <div className="relative">
                     <div className="absolute inset-0 bg-orange-500/20 blur-3xl rounded-full scale-150" />
-
-
                 </div>
 
                 <div className="flex flex-col items-center gap-2">

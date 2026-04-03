@@ -1,21 +1,22 @@
 import { useState, useEffect, useMemo } from "react";
 import { Menu, Search, Settings, PenSquare, Loader2 } from "lucide-react";
-import { ChatItem } from "./ChatItem";
+import { ChatItem } from "@features/chat/ChatItem";
 import Fenek from "@assets/fenek.svg";
 import { useOverlay } from "@features/overlay/OverlayContext";
-import { useUsers } from "@features/user/UserContext";
-import { ChatContent } from "./ChatContent";
-import { useChatStore } from "./chatStore";
-import { getChatDisplayInfo } from "./chat";
+import { ChatContent } from "@features/chat/ChatContent";
+import { useChatStore } from "@features/chat/chatStore";
+import { useUserStore } from "@features/user/userStore";
+import { getChatDisplayInfo } from "@features/chat/chat.tsx";
 
 export default function ChatsPage() {
     const fetchChats = useChatStore(state => state.fetchChats);
     const chats = useChatStore(state => state.chats);
     const loadingChats = useChatStore(state => state.loadingChats);
     const selectedChatId = useChatStore(state => state.selectedChatId);
-    const selectChat = useChatStore(state => state.selectChat);
+    const selectChatAndLoad = useChatStore(state => state.selectChatAndLoad);
 
-    const { registry, requestUsers } = useUsers();
+    const registry = useUserStore(state => state.registry);
+
     const { open } = useOverlay();
 
     const [searchQuery, setSearchQuery] = useState("");
@@ -23,15 +24,7 @@ export default function ChatsPage() {
 
     useEffect(() => {
         fetchChats();
-    }, []);
-
-    useEffect(() => {
-        if (chats.length === 0) return;
-        const userIds = chats
-            .filter(c => c.type === "PRIVATE" && c.otherUserId)
-            .map(c => c.otherUserId as string);
-        requestUsers(userIds);
-    }, [chats, requestUsers]);
+    }, [fetchChats]);
 
     const filteredChats = useMemo(() => {
         return chats
@@ -96,20 +89,19 @@ export default function ChatsPage() {
                 </div>
 
                 {/* Chat List */}
-                <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 hover:scrollbar-thumb-white/20">
+                <div className="flex-1 overflow-y-auto">
                     {loadingChats ? (
                         <div className="flex flex-col items-center justify-center h-40 gap-3 text-white/40">
                             <Loader2 className="w-6 h-6 animate-spin" />
                             {!isSidebarCollapsed && <span className="text-sm">Loading chats...</span>}
                         </div>
                     ) : (
-                        filteredChats.map(({ chat, displayInfo }) => (
+                        filteredChats.map(({ chat }) => (
                             <ChatItem
-                                key={chat.id}
+                                // key={chat.id}
                                 chat={chat}
-                                displayInfo={displayInfo}
                                 isActive={selectedChatId === chat.id}
-                                onClick={() => selectChat(chat.id)}
+                                onClick={() => selectChatAndLoad(chat.id)}
                             />
                         ))
                     )}
@@ -137,7 +129,7 @@ export default function ChatsPage() {
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col bg-black relative">
                 {selectedChat && selectedChatDisplayInfo ? (
-                    <ChatContent displayInfo={selectedChatDisplayInfo} />
+                    <ChatContent />
                 ) : (
                     <div className="flex-1 flex flex-col items-center justify-center text-white/30 gap-4">
                         <h2 className="text-lg font-medium">Select a chat to start messaging</h2>

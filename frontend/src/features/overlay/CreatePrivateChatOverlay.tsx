@@ -11,6 +11,18 @@ interface UserResult {
     color: string;
 }
 
+function useDebounce<T>(value: T, delay: number) {
+    const [debounced, setDebounced] = useState(value);
+
+    useEffect(() => {
+        const timeout = setTimeout(() => setDebounced(value), delay);
+        return () => clearTimeout(timeout);
+    }, [value, delay]);
+
+    return debounced;
+}
+
+
 export default function CreatePrivateChatOverlay() {
     const { close } = useOverlay();
 
@@ -18,47 +30,51 @@ export default function CreatePrivateChatOverlay() {
     const [results, setResults] = useState<UserResult[]>([]);
     const [selectedUser, setSelectedUser] = useState<UserResult | null>(null);
     const [isSearching, setIsSearching] = useState(false);
+    const [hasSearched, setHasSearched] = useState(false);
     const [isCreating, setIsCreating] = useState(false);
+
+    const debouncedQuery = useDebounce(query, 200);
 
     useEffect(() => {
         const controller = new AbortController();
 
         const searchUsers = async () => {
-            if (query.trim().length === 0) {
-                setResults([]);
+            if (debouncedQuery.trim().length === 0) {
+                setHasSearched(false);
                 return;
             }
 
             setIsSearching(true);
+            setHasSearched(false);
+
             try {
-                const res = await fetch(`/api/users/search?q=${encodeURIComponent(query)}`,
+                const res = await fetch(
+                    `/api/users/search?q=${encodeURIComponent(debouncedQuery)}`,
                     {
                         method: "GET",
                         credentials: "include",
                         signal: controller.signal
-                    });
+                    }
+                );
 
-                if (!res.ok) {
-                    throw new Error
-                }
+                if (!res.ok) throw new Error();
 
                 const data = await res.json();
                 setResults(data);
-
-            } catch (error) {
-                console.error("Search failed", error);
+                setHasSearched(true);
+            } catch (error: any) {
+                if (error.name !== "AbortError") {
+                    console.error("Search failed", error);
+                }
             } finally {
                 setIsSearching(false);
             }
         };
 
-        const timeoutId = setTimeout(searchUsers, 300);
+        searchUsers();
 
-        return () => {
-            controller.abort();
-            clearTimeout(timeoutId);
-        }
-    }, [query]);
+        return () => controller.abort();
+    }, [debouncedQuery]);
 
     const handleCreateChat = async () => {
         if (!selectedUser) return;
@@ -120,7 +136,7 @@ export default function CreatePrivateChatOverlay() {
                         <Loader2 className="w-6 h-6 animate-spin text-orange-500" />
                         <span className="text-sm">Searching...</span>
                     </div>
-                ) : results.length > 0 ? (
+                ) : hasSearched && results.length > 0 ? (
                     <div className="space-y-1">
                         {results.map((user) => {
                             const isSelected = selectedUser?.id === user.id;
@@ -159,7 +175,7 @@ export default function CreatePrivateChatOverlay() {
                     </div>
                 ) : (
                     <div className="flex flex-col items-center justify-center h-full text-white/20 gap-3">
-                        {query ? (
+                        {hasSearched ? (
                             <>
                                 <Search className="w-12 h-12 stroke-1" />
                                 <span className="text-sm">No users found</span>
