@@ -10,52 +10,85 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class EventConfig {
-    public static final String EXCHANGE = "chats.exchange";
-    public static final String REALTIME_EXCHANGE = "chats.realtime.exchange";
-    public static final String QUEUE = "chats.events";
-    public static final String REALTIME_QUEUE = "chats.realtime.events";
-    public static final String ROUTING_KEY = "chats.#";
-    public static final String REALTIME_ROUTING_KEY = "chats.realtime.#";
+    // ===== Chat service internal events =====
+    // Persistent functionality
+    public static final String CHATS_EXCHANGE = "chats.exchange";
+    public static final String CHATS_QUEUE = "chats.events";
+
+    public static final String CHATS_REALTIME_EXCHANGE = "chats.realtime.exchange";
+    public static final String CHATS_REALTIME_QUEUE = "chats.realtime.events";
 
     @Bean
-    public Queue persistentEventsQueue() {
-        return new Queue(QUEUE, true);
+    public Queue persistentQueue() {
+        return new Queue(CHATS_QUEUE, true);
     }
 
     @Bean
-    public Queue ephemeralEventsQueue() {
+    TopicExchange persistentExchange() {
+        return new TopicExchange(CHATS_EXCHANGE);
+    }
+
+    @Bean
+    Binding persistentBinding() {
+        return BindingBuilder.bind(persistentQueue())
+                .to(persistentExchange())
+                .with("chats.#");
+    }
+
+    // Ephemeral functionality
+    @Bean
+    public Queue ephemeralQueue() {
         return QueueBuilder
-                .nonDurable(REALTIME_QUEUE)
-                .exclusive()
+                .nonDurable(CHATS_REALTIME_QUEUE)
                 .autoDelete()
-                .ttl(15000)
+                .ttl(10000)
                 .build();
     }
 
     @Bean
-    TopicExchange persistentEventsExchange() {
-        return new TopicExchange(EXCHANGE);
+    TopicExchange realtimeExchange() {
+        return new TopicExchange(CHATS_REALTIME_EXCHANGE);
     }
 
     @Bean
-    TopicExchange ephemeralEventsExchange() {
-        return new TopicExchange(REALTIME_EXCHANGE);
+    Binding realtimeBinding() {
+        return BindingBuilder.bind(ephemeralQueue())
+                .to(realtimeExchange())
+                .with("realtime.#");
+    }
+
+    // ===== External events from user service =====
+    // User functionality
+    public static final String USERS_EXCHANGE = "users.exchange";
+    public static final String USERS_UPDATED_QUEUE = "chats.users.updated";
+    public static final String USERS_CREATED_QUEUE = "chats.users.created";
+
+    @Bean
+    Queue userUpdatedQueue() {
+        return new Queue(USERS_UPDATED_QUEUE, true);
     }
 
     @Bean
-    Binding persistentEventsBinding() {
-        return BindingBuilder.bind(persistentEventsQueue())
-                .to(persistentEventsExchange())
-                .with(ROUTING_KEY);
+    Queue userCreatedQueue() {
+        return new Queue(USERS_CREATED_QUEUE, true);
     }
 
     @Bean
-    Binding ephemeralEventsBinding() {
-        return BindingBuilder.bind(ephemeralEventsQueue())
-                .to(ephemeralEventsExchange())
-                .with(REALTIME_ROUTING_KEY);
+    TopicExchange userExchange() {
+        return new TopicExchange(USERS_EXCHANGE);
     }
 
+    @Bean
+    Binding userUpdatedBinding() {
+        return BindingBuilder.bind(userUpdatedQueue()).to(userExchange()).with("users.user.updated");
+    }
+
+    @Bean
+    Binding userCreatedBinding() {
+        return BindingBuilder.bind(userCreatedQueue()).to(userExchange()).with("users.user.created");
+    }
+
+    // All the routing keys
     public final class RoutingKeys {
         private RoutingKeys() {
         }
@@ -70,12 +103,16 @@ public class EventConfig {
 
         public static final String REACTION_DELETED = "chats.reaction.deleted";
 
-        public static final String TYPING_STARTED = "realtime.typing.started";
-
-        public static final String TYPING_STOPPED = "realtime.typing.stopped";
+        public static final String TYPING = "realtime.typing";
 
         public static final String ONLINE = "realtime.online";
 
         public static final String OFFLINE = "realtime.offline";
+
+        public static final String USER_UPDATED = "users.user.updated";
+
+        public static final String USER_CREATED = "users.user.created";
+
+        public static final String USER_LAST_SEEN = "users.user.lastseen";
     }
 }
