@@ -2,6 +2,11 @@ spring:
   application:
     name: users
   
+  data:
+    redis:
+      host: redis
+      port: 6379
+      
   datasource:
     url: ${POSTGRES_URL}
     driver-class-name: org.postgresql.Driver
