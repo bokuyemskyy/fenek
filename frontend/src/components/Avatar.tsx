@@ -1,9 +1,10 @@
-interface AvatarProps {
+export interface AvatarProps {
     avatarUrl?: string | null;
     displayName?: string;
     color?: string | null;
     icon?: React.ReactNode;
 }
+
 const getInitials = (displayName?: string) => {
     if (!displayName?.trim()) return "?";
     const names = displayName.trim().split(" ");
