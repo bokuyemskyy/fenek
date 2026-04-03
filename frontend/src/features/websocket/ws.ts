@@ -1,4 +1,23 @@
-export interface MessageUpdatedEvent {
+export const WsEventType = {
+    // Persistent
+    MESSAGE_CREATED: "chats.message.created",
+    MESSAGE_UPDATED: "chats.message.updated",
+    MESSAGE_DELETED: "chats.message.deleted",
+    REACTION_CREATED: "chats.reaction.created",
+    REACTION_DELETED: "chats.reaction.deleted",
+    CHAT_ADDED: "chats.chat.added",
+    CHAT_REMOVED: "chats.chat.removed",
+    CHAT_UPDATED: "chats.chat.updated",
+
+    // Realtime
+    TYPING: "realtime.typing",
+    ONLINE: "realtime.online",
+    OFFLINE: "realtime.offline",
+} as const;
+
+export type WsEventType = typeof WsEventType[keyof typeof WsEventType];
+
+export interface MessageCreatedEvent {
     messageId: string;
     userId: string;
     chatId: string;
@@ -8,13 +27,12 @@ export interface MessageUpdatedEvent {
     replyToId?: string | null;
 }
 
+export interface MessageUpdatedEvent extends MessageCreatedEvent { }
+
 export interface MessageDeletedEvent {
     messageId: string;
     userId: string;
     chatId: string;
-    createdAt: string;
-    editedAt: string;
-    replyToId?: string | null;
 }
 
 export interface ReactionCreatedEvent {
@@ -30,34 +48,28 @@ export interface ReactionDeletedEvent {
     chatId: string;
 }
 
-export interface TypingStartedEvent {
+export interface PresenceEvent {
     userId: string;
     chatId: string;
+    online: boolean;
+    lastSeen: string;
 }
 
-export interface TypingStoppedEvent {
+export interface TypingEvent {
     userId: string;
     chatId: string;
 }
 
 export type WsEventPayload =
+    | MessageCreatedEvent
     | MessageUpdatedEvent
     | MessageDeletedEvent
     | ReactionCreatedEvent
     | ReactionDeletedEvent
-    | TypingStartedEvent
-    | TypingStoppedEvent;
+    | PresenceEvent
+    | TypingEvent;
 
 export interface WsEvent<T = WsEventPayload> {
     event: WsEventType;
     data: T;
 }
-
-export type WsEventType =
-    | "chats.message.created"
-    | "chats.message.updated"
-    | "chats.message.deleted"
-    | "chats.reaction.created"
-    | "chats.reaction.deleted"
-    | "realtime.typing.started"
-    | "realtime.typing.stopped";
