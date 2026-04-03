@@ -1,18 +1,11 @@
 package dev.fenek.users.dto;
 
+import java.time.Instant;
 import java.util.UUID;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Builder;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class UserResponse {
-    private UUID id;
-    private String username;
-    private String displayName;
-    private String color;
-    private String avatarUrl;
+@Builder
+public record UserResponse(UUID id, String username, String displayName, String color, String avatarUrl,
+        Instant lastSeenAt, boolean online) {
 }
