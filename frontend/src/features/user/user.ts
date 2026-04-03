@@ -4,6 +4,10 @@ export interface User {
     displayName: string;
     color?: string;
     avatarUrl?: string;
+
+    online: boolean;
+    lastSeenAt: string;
+
     fetchedAt?: number;
 }
 
