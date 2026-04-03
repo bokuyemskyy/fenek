@@ -2,6 +2,6 @@ package dev.fenek.chats.dto;
 
 import java.util.UUID;
 
-public record OnlineEvent(
+public record TypingEvent(
                 UUID userId, UUID chatId) implements ChatEvent {
 }
