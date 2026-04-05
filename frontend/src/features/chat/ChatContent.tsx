@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Send, SendHorizonal, Smile } from "lucide-react";
+import { SendHorizonal, Smile } from "lucide-react";
 import Avatar from "@components/Avatar";
 import { useChatStore } from '@features/chat/chatStore';
 import { useAuth } from "@features/auth/AuthContext";
@@ -21,6 +21,7 @@ export function ChatContent() {
     const { user } = useAuth();
     const [messageInput, setMessage] = useState("");
     const messages = useChatStore((state) => state.messages);
+    const scrollRef = useRef<HTMLDivElement>(null);
     const sendMessage = useChatStore((state) => state.sendMessage);
 
     const { title, avatarProps } = useChatDisplayInfo(chat);
@@ -32,6 +33,27 @@ export function ChatContent() {
             </div>
         );
     }
+
+    const scrollToBottom = (behavior: ScrollBehavior = "smooth") => {
+        if (scrollRef.current) {
+            scrollRef.current.scrollTo({
+                top: scrollRef.current.scrollHeight,
+                behavior
+            });
+        }
+    };
+
+    useEffect(() => {
+        const container = scrollRef.current;
+        if (!container) return;
+
+        const isNearBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 150;
+
+        if (isNearBottom) {
+            setTimeout(() => scrollToBottom("smooth"), 10);
+        }
+    }, [messages]);
+
 
     const renderStatus = () => {
         if (chat.type !== "PRIVATE" || !otherUser) return null;
@@ -105,9 +127,15 @@ export function ChatContent() {
                 </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-2">
-                {messages.map((message) => (
-                    <MessageBubble key={message.id} message={message} isMine={message.senderId == user?.id} />
+            <div
+                ref={scrollRef}
+                className="flex-1 overflow-y-auto px-6 py-4 flex flex-col-reverse"
+                style={{ overflowAnchor: 'auto' }}
+            >
+                {[...messages].reverse().map((message) => (
+                    <div key={message.id} className="py-1">
+                        <MessageBubble message={message} isMine={message.senderId == user?.id} />
+                    </div>
                 ))}
             </div>
 

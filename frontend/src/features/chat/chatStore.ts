@@ -106,8 +106,11 @@ export const useChatStore = create<ChatState>()(
 
         _appendMessage: (message) => set((s) => {
             const idx = s.messages.findIndex((m) => m.id === message.id);
-            if (idx !== -1) s.messages[idx] = message;
-            else s.messages.push(message);
+            if (idx !== -1) {
+                s.messages[idx] = message;
+            } else {
+                s.messages.push(message);
+            }
         }),
 
         _removeMessage: (messageId) => set((s) => {
@@ -246,7 +249,6 @@ export const useChatStore = create<ChatState>()(
                 if (!res.ok) throw new Error(await res.text());
 
                 const data: MessagePageResponse = await res.json();
-
                 set((s) => {
                     s.messages = [...data.messages, ...s.messages];
                     s.nextCursor = data.nextCursor;
